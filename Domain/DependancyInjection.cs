@@ -1,6 +1,11 @@
-﻿namespace Domain;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-public class DependancyInjection
+namespace Domain;
+
+public static class DependancyInjection
 {
-
+    public static IServiceCollection AddDomain(this IServiceCollection services)
+    {
+        return services;
+    }
 }
