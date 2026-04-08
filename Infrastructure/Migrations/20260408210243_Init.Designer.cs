@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260406231143_Init")]
+    [Migration("20260408210243_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -41,6 +41,9 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
@@ -55,7 +58,7 @@ namespace Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex");
 
-                    b.ToTable("roles", "dms");
+                    b.ToTable("AspNetRoles", "dms");
                 });
 
             modelBuilder.Entity("Domain.Entities.ApplicationUser", b =>
@@ -89,6 +92,9 @@ namespace Infrastructure.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -138,7 +144,7 @@ namespace Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("users", "dms");
+                    b.ToTable("AspNetUsers", "dms");
                 });
 
             modelBuilder.Entity("Domain.Entities.Department", b =>
@@ -277,7 +283,41 @@ namespace Infrastructure.Migrations
                         .WithMany("Users")
                         .HasForeignKey("DepartmentId");
 
+                    b.OwnsMany("Domain.Entities.RefreshToken", "RefreshTokens", b1 =>
+                        {
+                            b1.Property<string>("UserId")
+                                .HasColumnType("text");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+
+                            b1.Property<DateTime>("CreateOn")
+                                .HasColumnType("timestamp with time zone");
+
+                            b1.Property<DateTime>("ExpiresOn")
+                                .HasColumnType("timestamp with time zone");
+
+                            b1.Property<DateTime?>("RevokeOn")
+                                .HasColumnType("timestamp with time zone");
+
+                            b1.Property<string>("Token")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("UserId", "Id");
+
+                            b1.ToTable("RefreshTokens", "dms");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId");
+                        });
+
                     b.Navigation("Department");
+
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

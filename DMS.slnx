@@ -4,5 +4,6 @@
     <Project Path="Application/Application.csproj" />
     <Project Path="Domain/Domain.csproj" />
     <Project Path="Infrastructure/Infrastructure.csproj" />
+    <Project Path="SharedKernel/SharedKernel.csproj" Id="01eca328-eea4-4c96-a9ae-f9975590d5cf" />
   </Folder>
 </Solution>

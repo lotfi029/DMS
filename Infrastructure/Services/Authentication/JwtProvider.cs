@@ -1,26 +1,17 @@
-﻿using Domain.Entities;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.Diagnostics;
+﻿using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Json;
 
 namespace Infrastructure.Services.Authentication;
 
 public class JwtProvider(
-    UserManager<ApplicationUser> userManager,
     IOptions<JwtOptions> jwtOptions) : IJwtProvider
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
-    public async Task<(string token, int expireMinutes)> GenerateTokenAsync(ApplicationUser user)
+    public (string token, int expireMinutes) GenerateToken(ApplicationUser user, IEnumerable<string> roles, IEnumerable<string> permissions)
     {
-        var roles = await userManager.GetRolesAsync(user);
-
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id),
@@ -33,6 +24,11 @@ public class JwtProvider(
         {
             claims.Add(new(nameof(roles), JsonSerializer.Serialize(roles), JsonClaimValueTypes.JsonArray));
         }
+        if (permissions is not null && permissions.Any())
+        {
+            claims.Add(new(nameof(permissions), JsonSerializer.Serialize(permissions), JsonClaimValueTypes.JsonArray));
+        }
+
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -46,6 +42,31 @@ public class JwtProvider(
         );
 
         return (new JwtSecurityTokenHandler().WriteToken(token), _jwtOptions.ExpiryMinutes);
+    }
+    public string? ValidateToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
+        try
+        {
+            tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                IssuerSigningKey = symmetricSecurityKey,
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ClockSkew = TimeSpan.Zero
+            }, out SecurityToken validatedToken);
+
+            var jwtToken = (JwtSecurityToken)validatedToken;
+
+            return jwtToken.Claims.First(e => e.Type == JwtRegisteredClaimNames.Sub).Value;
+
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
 

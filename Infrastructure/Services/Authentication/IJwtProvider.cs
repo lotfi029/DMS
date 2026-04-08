@@ -1,8 +1,7 @@
-﻿using Domain.Entities;
-
-namespace Infrastructure.Services.Authentication;
+﻿namespace Infrastructure.Services.Authentication;
 
 public interface IJwtProvider
 {
-    Task<(string token, int expireMinutes)> GenerateTokenAsync(ApplicationUser user);
+    (string token, int expireMinutes) GenerateToken(ApplicationUser user, IEnumerable<string> roles, IEnumerable<string> permissions);
+    string? ValidateToken(string token);
 }

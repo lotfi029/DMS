@@ -1,4 +1,7 @@
-﻿namespace Infrastructure;
+﻿using Infrastructure.Persistence.Seeders;
+using Infrastructure.Services;
+
+namespace Infrastructure;
 
 public static class DependancyInjection
 {
@@ -12,10 +15,11 @@ public static class DependancyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql(
-                connectionString
-                );
+            options.UseNpgsql(connectionString);
         });
+
+        services.RegisterSeeders();
+
 
         // Identity configuration
         services.AddIdentity<ApplicationUser, ApplicationRole>()
@@ -53,7 +57,13 @@ public static class DependancyInjection
         });
 
         services.AddScoped<IJwtProvider, JwtProvider>();
+        services.RegisterServices();
+        return services;
+    }
 
+    private static IServiceCollection RegisterServices(this IServiceCollection services)
+    {
+        services.AddScoped<IAuthService, AuthService>();
         return services;
     }
 

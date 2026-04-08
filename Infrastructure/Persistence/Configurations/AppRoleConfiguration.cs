@@ -2,9 +2,9 @@
 
 namespace Infrastructure.Persistence.Configurations;
 
-internal class AppRoleConfiguration : IEntityTypeConfiguration<ApplicationUser>
+internal class AppRoleConfiguration : IEntityTypeConfiguration<ApplicationRole>
 {
-    public void Configure(EntityTypeBuilder<ApplicationUser> builder)
+    public void Configure(EntityTypeBuilder<ApplicationRole> builder)
     {
     }
 }
