@@ -5,5 +5,15 @@ public sealed record AddUserRequest(
      string LastName,
      string Password,
      string Email,
-     string UserName
+     string UserName,
+     string? RoleId,
+     Guid? DepartmentId
+    );
+
+
+
+
+public sealed record UpdateUserRequest(
+     string FirstName,
+     string LastName
     );

@@ -11,7 +11,7 @@ internal sealed class LoggingDecorator
         public async Task<Result<TResponse>> HandleAsync(TCommand command, CancellationToken ct = default)
         {
             string requestName = typeof(TCommand).Name;
-            
+
             logger.LogInformation("Handling command {RequestName}", requestName);
 
             Result<TResponse> result = await innerHandler.HandleAsync(command, ct);
@@ -35,7 +35,7 @@ internal sealed class LoggingDecorator
         public async Task<Result> HandleAsync(TCommand command, CancellationToken ct = default)
         {
             string requestName = typeof(TCommand).Name;
-            
+
             logger.LogInformation("Handling command {RequestName}", requestName);
 
             Result result = await innerHandler.HandleAsync(command, ct);

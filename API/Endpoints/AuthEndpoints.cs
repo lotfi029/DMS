@@ -1,10 +1,7 @@
-﻿using Application.Abstractions.Messaging;
-using Application.DTOs.Auths;
+﻿using Application.DTOs.Auths;
 using Application.Features.Auths.Commands.Add;
 using Application.Features.Auths.Commands.RefreshToken;
 using Application.Features.Auths.Commands.Revoke;
-using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 
 namespace API.Endpoints;
 
@@ -15,9 +12,18 @@ internal sealed class AuthEndpoints : IEndpoint
         var group = app.MapGroup("/api/auth")
             .WithTags("Auth");
 
-        group.MapPost("/login", LoginAsync);
-        group.MapPost("/refresh-token", RefreshTokenAsync);
-        group.MapPost("/revoke-refresh-token", RevokeRefreshTokenAsync);
+        group.MapPost("/login", LoginAsync)
+            .Produces<AuthResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+        
+        group.MapPost("/refresh-token", RefreshTokenAsync)
+            .Produces<AuthResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+        
+        group.MapPost("/revoke-refresh-token", RevokeRefreshTokenAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
 
     }
 

@@ -4,12 +4,50 @@ namespace Infrastructure.Services;
 
 internal sealed class AuthService(
     UserManager<ApplicationUser> userManager,
+    RoleManager<ApplicationRole> roleManager,
     ApplicationDbContext dbContext,
     IJwtProvider jwtProvider
     ) : IAuthService
 {
     private readonly int _refreshTokenExpiryDays = 14;
 
+    public async Task<Result<string>> RegisterAsync(string roleId, CreateUserRequest request, CancellationToken ct = default)
+    {
+        if (await userManager.Users.AnyAsync(e => e.Email == request.Email, ct))
+            return AuthErrors.DuplicatedEmail(request.Email);
+
+        var user = ApplicationUser.Create(
+            id: Guid.CreateVersion7().ToString(),
+            userName: request.UserName,
+            email: request.Email,
+            firstName: request.FirstName,
+            lastName: request.LastName
+        );
+
+        var result = await userManager.CreateAsync(user, request.Password);
+        if (!result.Succeeded)
+            return Error.BadRequest("Auth.Register", string.Join(", ", result.Errors.Select(e => e.Description)));
+
+        if (!string.IsNullOrEmpty(roleId))
+        {
+            if (await roleManager.FindByIdAsync(roleId) is not { } role)
+                return RoleErrors.NotFound;
+
+            var roleResult = await userManager.AddToRoleAsync(user, role.Name!);
+            if (!roleResult.Succeeded)
+                return Error.BadRequest("Auth.Register", string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+        }
+        else
+        {
+            var roleResult = await userManager
+                .AddToRoleAsync(user, DefaultRoles.Employee.Name!);
+            
+            if (!roleResult.Succeeded)
+                return Error.BadRequest("Auth.Register", string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+        }
+
+        return Result.Success(user.Id);
+    }
     public async Task<Result<AuthResponse>> GetRefreshTokenAsync(RefreshTokenRequest request, CancellationToken ct = default)
     {
         var userId = jwtProvider.ValidateToken(request.Token);

@@ -1,6 +1,4 @@
-﻿using Domain.Entities;
-
-namespace Domain.Constants;
+﻿namespace Domain.Constants;
 
 public static class DefaultRoles
 {
@@ -31,17 +29,16 @@ public static class DefaultRoles
         IsActive = true,
         CreatedAt = DateTime.UtcNow
     };
-    public static readonly ApplicationRole Engineer = new()
+    public static readonly ApplicationRole Employee = new()
     {
         Id = "e1dc8596-0d07-40fd-952a-5dde637a0f22",
-        Name = "Engineer",
-        NormalizedName = "ENGINEER",
-        Description = "System role: engineer",
+        Name = "Employee",
+        NormalizedName = "EMPLOYEE",
+        Description = "System role: employee",
         IsActive = true,
         CreatedAt = DateTime.UtcNow
     };
 
-
     public static readonly IList<ApplicationRole> All = 
-        [ Admin, DepartmentHead, Engineer, Manager];
+        [ Admin, DepartmentHead, Employee, Manager];
 }

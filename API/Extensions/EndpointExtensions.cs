@@ -1,4 +1,6 @@
 ﻿using API.Endpoints;
+using Infrastructure.Services.Authentication.Filters;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Reflection;
 

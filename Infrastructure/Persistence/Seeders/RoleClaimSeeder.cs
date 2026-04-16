@@ -23,7 +23,7 @@ public sealed class RoleClaimSeeder(
                 var claims = role.Value.Select(claim => new IdentityRoleClaim<string>
                 {
                     Id = ++cnt,
-                    ClaimType = Permissions.ClaimType,
+                    ClaimType = DefaultPermissions.ClaimType,
                     ClaimValue = claim,
                     RoleId = role.Key.Id
                 });

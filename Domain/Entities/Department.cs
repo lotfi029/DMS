@@ -1,8 +1,7 @@
 ﻿namespace Domain.Entities;
 
-public class Department
+public class Department: Entity
 {
-    public Guid Id { get; private set; } = Guid.NewGuid();
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
     public bool IsActive { get; private set; } = true;
@@ -17,7 +16,6 @@ public class Department
 
         return new Department
         {
-            Id = Guid.NewGuid(),
             Name = name,
             Description = description,
             CreatedAt = DateTime.UtcNow
@@ -32,4 +30,5 @@ public class Department
     }
 
     public void Deactivate() => IsActive = false;
+    public void Activate() => IsActive = true;
 }

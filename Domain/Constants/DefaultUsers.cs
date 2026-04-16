@@ -1,28 +1,17 @@
-﻿using Domain.Entities;
-
-namespace Domain.Constants;
+﻿namespace Domain.Constants;
 
 public static class DefaultUsers
 {
-    public static readonly ApplicationUser Manager = new()
-    {
-        Id = "d1f8c9e2-5b6a-4c3e-9a1b-2f8e7c9d0a1b",
-        UserName = "manager",
-        NormalizedUserName = "MANAGER",
-        Email = "manager@system.dms",
-        NormalizedEmail = "manager@system.dms".ToUpper(),
-        FirstName = "Default",
-        LastName = "Manager",
-        IsActive = true,
-        CreatedAt = DateTime.UtcNow,
-        LastLoginAt = DateTime.UtcNow,
-        EmailConfirmed = true,
-        PasswordHash = "AQAAAAIAAYagAAAAEFt3Bi8L7046PSKyRz381Zz0/Z5kr1G8TIRkvy5ruDIsRS2boNa8as3FyzmW5YN/mw==",
-        ConcurrencyStamp = Guid.NewGuid().ToString(),
-        PhoneNumberConfirmed = true,
-        SecurityStamp = Guid.NewGuid().ToString()
-    };
+    // DefaultPassword123!
 
+    public static readonly ApplicationUser Manager = ApplicationUser.Create(
+        id: "d1f8c9e2-5b6a-4c3e-9a1b-2f8e7c9d0a1b",
+        userName: "manager",
+        email: "manager@system.dms",
+        firstName: "Default",
+        lastName: "Manager",
+        passwordHashed: "AQAAAAIAAYagAAAAEO+viSpwZfDcerDVZKFkj8KyR/DTccUyEY4rkX2+ju0KwGZiT6acd1W7clgf9WSjfw=="
+        );
 
     public static readonly IList<ApplicationUser> All = [Manager];
 }

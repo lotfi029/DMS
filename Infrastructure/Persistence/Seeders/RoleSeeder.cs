@@ -1,6 +1,4 @@
-﻿using Npgsql.NameTranslation;
-
-namespace Infrastructure.Persistence.Seeders;
+﻿namespace Infrastructure.Persistence.Seeders;
 
 public sealed class RoleSeeder(
     RoleManager<ApplicationRole> roleManager,

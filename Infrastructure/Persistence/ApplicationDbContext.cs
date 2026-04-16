@@ -18,7 +18,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<IdentityRoleClaim<string>>().ToTable("role_claims");
 
         modelBuilder.Entity<Department>().ToTable("departments");
-        
+        modelBuilder.Entity<IdentityRoleClaim<string>>()
+            .Property(rc => rc.Id)
+            .ValueGeneratedOnAdd();
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
     }

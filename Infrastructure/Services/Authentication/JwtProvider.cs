@@ -26,7 +26,7 @@ public class JwtProvider(
         }
         if (permissions is not null && permissions.Any())
         {
-            claims.Add(new(nameof(permissions), JsonSerializer.Serialize(permissions), JsonClaimValueTypes.JsonArray));
+            claims.Add(new(DefaultPermissions.ClaimType, JsonSerializer.Serialize(permissions), JsonClaimValueTypes.JsonArray));
         }
 
 

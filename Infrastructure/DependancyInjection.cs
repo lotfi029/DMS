@@ -1,5 +1,5 @@
-﻿using Infrastructure.Persistence.Seeders;
-using Infrastructure.Services;
+﻿using Infrastructure.Services.Authentication.Filters;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Infrastructure;
 
@@ -20,6 +20,7 @@ public static class DependancyInjection
 
         services.RegisterSeeders();
 
+        services.AddSingleton<IAuthorizationHandler, PermissionAutherizationHandler>();
 
         // Identity configuration
         services.AddIdentity<ApplicationUser, ApplicationRole>()
@@ -58,14 +59,24 @@ public static class DependancyInjection
 
         services.AddScoped<IJwtProvider, JwtProvider>();
         services.RegisterServices();
+        services.RegisterRepositories();
         return services;
     }
 
     private static IServiceCollection RegisterServices(this IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IPermissionService, PermissionService>();
         return services;
     }
 
+    private static IServiceCollection RegisterRepositories(this IServiceCollection services)
+    {
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+        return services;
+    }
 }
