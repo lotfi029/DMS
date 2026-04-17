@@ -34,7 +34,7 @@ internal sealed class UserEndpoints : IEndpoint
             .Produces(StatusCodes.Status204NoContent);
         
         group.MapPut("/{id:guid}/update", UpdateAsync)
-            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Users.Create))
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Users.Update))
             .Produces(StatusCodes.Status204NoContent);
 
         group.MapDelete("/{id}", DeleteUserAsync)

@@ -110,6 +110,7 @@ internal sealed class AuthService(
             ExpiresOn = refreshTokenExpiration,
         });
 
+        user.UpdateLastLogin();
         await userManager.UpdateAsync(user);
 
 

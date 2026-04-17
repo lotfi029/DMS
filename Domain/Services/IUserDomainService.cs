@@ -7,4 +7,5 @@ public interface IUserDomainService
     Task<Result> ActivateAsync(string userId, CancellationToken ct = default);
     Task<Result<ApplicationUser>> GetByIdAsync(string userId, CancellationToken ct = default);
     Task<Result<IEnumerable<ApplicationUser>>> GetAllAsync(string userId, CancellationToken ct = default);
+    Task<Result> UpdateLastLoginAsync(string userId, CancellationToken ct = default);
 }

@@ -57,4 +57,16 @@ internal sealed class UserDomainService(
 
         return Result.Success();
     }
+    public async Task<Result> UpdateLastLoginAsync(string userId, CancellationToken ct = default)
+    {
+        var rowsAffected = await userRepository
+            .ExecuteUpdateAsync(
+                u => u.Id == userId && u.IsActive,
+                u => u.SetProperty(p => p.LastLoginAt, DateTime.UtcNow), ct);
+
+        if (rowsAffected == 0)
+            return UserErrors.NotFound;
+        
+        return Result.Success();
+    }
 }

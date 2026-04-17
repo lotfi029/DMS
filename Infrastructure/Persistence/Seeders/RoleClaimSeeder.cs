@@ -12,23 +12,13 @@ public sealed class RoleClaimSeeder(
             if (await roleManager.RoleExistsAsync(role.Key.Name!))
             {
                 // TODO:
-                if (await roleManager.GetClaimsAsync(role.Key) is { } claimsss && claimsss.Any())
+                if (await roleManager.GetClaimsAsync(role.Key) is { } claims && claims.Any())
                     continue;
+                
+                
+                var addedClaims = role.Value.Select(claim => ApplicationRoleClaim.Create(role.Key.Id, DefaultPermissions.ClaimType, claim));
 
-                var cnt = await dbContext.RoleClaims
-                    .OrderBy(x => x.Id)
-                    .Select(x => x.Id)
-                    .LastOrDefaultAsync();
-
-                var claims = role.Value.Select(claim => new IdentityRoleClaim<string>
-                {
-                    Id = ++cnt,
-                    ClaimType = DefaultPermissions.ClaimType,
-                    ClaimValue = claim,
-                    RoleId = role.Key.Id
-                });
-
-                dbContext.RoleClaims.AddRange(claims);
+                dbContext.RoleClaims.AddRange(addedClaims);
                 await dbContext.SaveChangesAsync();
                 logger.LogInformation("Claims for role '{RoleName}' added successfully.", role.Key.Name);
             }

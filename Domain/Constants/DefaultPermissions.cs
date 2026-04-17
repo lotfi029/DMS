@@ -6,6 +6,8 @@ public static class DefaultPermissions
 
     public static class Users
     {
+        public static string GroupName => nameof(Users);
+
         public const string Read = "users.read";
         public const string ViewProfile = "users.view_profile";
         public const string Update = "users.update";
@@ -18,6 +20,7 @@ public static class DefaultPermissions
     }
     public static class Roles
     {
+        public static string GroupName => nameof(Roles);
         public const string Read = "roles.read";
         public const string Update = "roles.update";
         public const string Create = "roles.create";
@@ -30,6 +33,7 @@ public static class DefaultPermissions
     }
     public static class Departments
     {
+        public static string GroupName => nameof(Departments);
         public const string Read = "departments.read";
         public const string ViewUsers = "departments.view_users";
         public const string Update = "departments.update";
@@ -44,6 +48,8 @@ public static class DefaultPermissions
     }
     public static class Permissions
     {
+        public static string GroupName => nameof(Permissions);
+
         public const string Read = "permissions.read";
         public const string AssignToRole = "permissions.assign_to_role";
         public const string RemoveFromRole = "permissions.remove_from_role";

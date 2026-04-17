@@ -2,7 +2,8 @@
 
 namespace Infrastructure.Persistence;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) 
+    : IdentityDbContext<ApplicationUser, ApplicationRole, string, IdentityUserClaim<string>, IdentityUserRole<string>, IdentityUserLogin<string>, ApplicationRoleClaim, IdentityUserToken<string>>(options)
 {
     public DbSet<Department> Departments { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -15,10 +16,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<IdentityUserClaim<string>>().ToTable("user_claims");
         modelBuilder.Entity<IdentityUserLogin<string>>().ToTable("user_logins");
         modelBuilder.Entity<IdentityUserToken<string>>().ToTable("user_tokens");
-        modelBuilder.Entity<IdentityRoleClaim<string>>().ToTable("role_claims");
-
+        modelBuilder.Entity<ApplicationRoleClaim>().ToTable("role_claims");
         modelBuilder.Entity<Department>().ToTable("departments");
-        modelBuilder.Entity<IdentityRoleClaim<string>>()
+        modelBuilder.Entity<ApplicationRoleClaim>()
             .Property(rc => rc.Id)
             .ValueGeneratedOnAdd();
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);

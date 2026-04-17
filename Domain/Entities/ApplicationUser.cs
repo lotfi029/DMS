@@ -64,4 +64,9 @@ public class ApplicationUser : IdentityUser
             concurrencyStamp: concurrencyStamp, 
             passwordHashed: passwordHashed);
     }
+
+    public void UpdateLastLogin()
+    {
+        LastLoginAt = DateTime.UtcNow;
+    }
 }

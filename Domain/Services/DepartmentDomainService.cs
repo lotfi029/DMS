@@ -34,7 +34,7 @@ public class DepartmentDomainService(
     }
     public async Task<Result> AddUserAsync(string userId, Guid departmentId, CancellationToken ct = default)
     {
-        if (await userRepository.ExistsAsync(e => e.Id == userId && e.IsActive, ct))
+        if (!await userRepository.ExistsAsync(e => e.Id == userId && e.IsActive, ct))
             return UserErrors.NotFound;
 
         if (await userRepository.ExistsAsync(e => e.DepartmentId == departmentId, ct))
@@ -45,7 +45,8 @@ public class DepartmentDomainService(
 
         var rowsAffected = await userRepository.ExecuteUpdateAsync(
             u => u.Id == userId,
-            u => u.SetProperty(p => p.DepartmentId, departmentId), ct);
+            u => u.SetProperty(p => p.DepartmentId, departmentId), 
+        ct);
 
         if (rowsAffected == 0)
             return UserErrors.NotFound;
@@ -56,14 +57,17 @@ public class DepartmentDomainService(
     {
         if (!await userRepository.ExistsAsync(e => e.Id == userId && e.IsActive, ct))
             return UserErrors.NotFound;
+
         if (await userRepository.ExistsAsync(e => e.DepartmentId == newDepartmentId, ct))
             return DepartmentErrors.AlreadyInDepartment;
+
         if (await departmentRepository.ExistsAsync(e => e.Id == newDepartmentId, ct))
             return DepartmentErrors.NotFound;
 
         var rowsAffected = await userRepository.ExecuteUpdateAsync(
             u => u.Id == userId,
-            u => u.SetProperty(p => p.DepartmentId, newDepartmentId), ct);
+            u => u.SetProperty(p => p.DepartmentId, newDepartmentId), 
+        ct);
         
         if (rowsAffected == 0)
             return UserErrors.NotFound;
@@ -77,7 +81,8 @@ public class DepartmentDomainService(
 
         var rowsAffected = await userRepository.ExecuteUpdateAsync(
             u => u.Id == userId,
-            u => u.SetProperty(p => p.DepartmentId, e => null), ct);
+            u => u.SetProperty(p => p.DepartmentId, e => null), 
+        ct);
 
         if (rowsAffected == 0)
             return UserErrors.NotFound;

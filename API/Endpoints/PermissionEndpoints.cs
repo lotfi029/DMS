@@ -27,10 +27,10 @@ internal sealed class PermissionEndpoints : IEndpoint
 
         group.MapGet("/user/{userId}", GetUserPermissionsAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Read))
-            .Produces<IEnumerable<string>>(StatusCodes.Status200OK);
+            .Produces<IEnumerable<PermissionResponse>>(StatusCodes.Status200OK);
         group.MapGet("/", GetAllPermissionsAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Read))
-            .Produces<IEnumerable<string>>(StatusCodes.Status200OK);
+            .Produces<IEnumerable<PermissionResponse>>(StatusCodes.Status200OK);
         group.MapGet("/role/{roleId}", GetRolePermissionsAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Read))
             .Produces<IEnumerable<string>>(StatusCodes.Status200OK);
@@ -55,7 +55,7 @@ internal sealed class PermissionEndpoints : IEndpoint
     }
     private async Task<IResult> GetUserPermissionsAsync(
         [FromRoute] string userId,
-        [FromServices] IQueryHandler<GetUserPermissionsQuery, IEnumerable<string>> handler,
+        [FromServices] IQueryHandler<GetUserPermissionsQuery, IEnumerable<PermissionResponse>> handler,
         CancellationToken ct)
     {
         var query = new GetUserPermissionsQuery(userId);
@@ -67,7 +67,7 @@ internal sealed class PermissionEndpoints : IEndpoint
     }
 
     private async Task<IResult> GetAllPermissionsAsync(
-        [FromServices] IQueryHandler<GetAllPermissionsQuery, IEnumerable<string>> handler,
+        [FromServices] IQueryHandler<GetAllPermissionsQuery, IEnumerable<PermissionResponse>> handler,
         CancellationToken ct)
     {
         var query = new GetAllPermissionsQuery();
@@ -95,7 +95,7 @@ internal sealed class PermissionEndpoints : IEndpoint
     }
     private async Task<IResult> GetRolePermissionsAsync(
         [FromRoute] string roleId,
-        [FromServices] IQueryHandler<GetRolePermissionsQuery, IEnumerable<string>> handler,
+        [FromServices] IQueryHandler<GetRolePermissionsQuery, IEnumerable<PermissionResponse>> handler,
         CancellationToken ct)
     {
         var query = new GetRolePermissionsQuery(roleId);

@@ -1,3 +1,5 @@
+using Application.DTOs.Permissions;
+
 namespace Infrastructure.Services;
 
 internal sealed class PermissionService(
@@ -6,7 +8,7 @@ internal sealed class PermissionService(
     RoleManager<ApplicationRole> roleManager
     ) : IPermissionService
 {
-    public async Task<Result<IEnumerable<string>>> GetUserPermissionsAsync(string userId, CancellationToken ct = default)
+    public async Task<Result<IEnumerable<PermissionResponse>>> GetUserPermissionsAsync(string userId, CancellationToken ct = default)
     {
         if (await userManager.FindByIdAsync(userId) is not { } user)
             return Error.NotFound("Permission.GetUserPermissions", "User not found");
@@ -15,7 +17,7 @@ internal sealed class PermissionService(
 
         var permissions = await dbContext.Roles
             .Where(r => roles.Contains(r.Name!))
-            .Join(dbContext.RoleClaims.Where(c => c.ClaimType == DefaultPermissions.ClaimType), r => r.Id, c => c.RoleId, (r, c) => c.ClaimValue)
+            .Join(dbContext.RoleClaims.Where(c => c.ClaimType == DefaultPermissions.ClaimType), r => r.Id, c => c.RoleId, (r, c) => new PermissionResponse(c.Id, r.Id, c.Group, c.ClaimValue!, c.DisplayName, c.Description))
             .Distinct()
             .ToListAsync(ct);
 
@@ -23,11 +25,11 @@ internal sealed class PermissionService(
         return permissions!;
     }
 
-    public async Task<Result<IEnumerable<string>>> GetAllPermissionAsync(CancellationToken ct = default)
+    public async Task<Result<IEnumerable<PermissionResponse>>> GetAllPermissionAsync(CancellationToken ct = default)
     {
         var permissions = await dbContext.RoleClaims
             .Where(c => c.ClaimType == DefaultPermissions.ClaimType)
-            .Select(c => c.ClaimValue)
+            .ProjectToType<PermissionResponse>()
             .Distinct()
             .ToListAsync(ct);
         
@@ -42,9 +44,8 @@ internal sealed class PermissionService(
         if (await dbContext.RoleClaims.AnyAsync(c => c.RoleId == roleId && c.ClaimType == DefaultPermissions.ClaimType && c.ClaimValue == permission, ct))
             return Error.BadRequest("Permission.AssignToRole", "Permission already assigned to role");
         
-        var cnt = await dbContext.RoleClaims.MaxAsync(e => e.Id, ct);
-
-        dbContext.RoleClaims.Add(new IdentityRoleClaim<string> { Id = cnt + 1, RoleId = roleId, ClaimType = DefaultPermissions.ClaimType, ClaimValue = permission });
+        
+        dbContext.RoleClaims.Add(ApplicationRoleClaim.Create(roleId, DefaultPermissions.ClaimType, permission));
         await dbContext.SaveChangesAsync(ct);
 
         return Result.Success();
@@ -58,11 +59,11 @@ internal sealed class PermissionService(
         return Result.Success();
     }
 
-    public async Task<Result<IEnumerable<string>>> GetRolePermissionsAsync(string roleId, CancellationToken ct = default)
+    public async Task<Result<IEnumerable<PermissionResponse>>> GetRolePermissionsAsync(string roleId, CancellationToken ct = default)
     {
         var permissions = await dbContext.RoleClaims
             .Where(c => c.RoleId == roleId && c.ClaimType == DefaultPermissions.ClaimType)
-            .Select(c => c.ClaimValue)
+            .ProjectToType<PermissionResponse>()
             .ToListAsync(ct);
 
         return permissions!;
