@@ -68,6 +68,10 @@ public static class DependancyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IPermissionService, PermissionService>();
+
+        services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<AuditContextAccessor>();
+
         return services;
     }
 

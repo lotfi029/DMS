@@ -6,7 +6,9 @@ internal sealed class AuthService(
     UserManager<ApplicationUser> userManager,
     RoleManager<ApplicationRole> roleManager,
     ApplicationDbContext dbContext,
-    IJwtProvider jwtProvider
+    IJwtProvider jwtProvider,
+    IAuditService auditService,
+    IHttpContextAccessor httpContextAccessor
     ) : IAuthService
 {
     private readonly int _refreshTokenExpiryDays = 14;
@@ -84,19 +86,35 @@ internal sealed class AuthService(
         });
 
         await userManager.UpdateAsync(user);
+        await auditService.LogAsync(AuditLog.TokenRefreshed(user.Id, IpAddress()), ct);
 
         return new AuthResponse(newToken, newRefreshToken, DateTime.UtcNow.AddMinutes(expiresIn));
     }
     public async Task<Result<AuthResponse>> GetTokenAsync(LoginRequest request, CancellationToken ct = default)
     {
         if (await userManager.FindByEmailAsync(request.Email) is not { } user)
+        {
+            await auditService.LogAsync(
+                AuditLog.Login(string.Empty, request.Email, request.Email, IpAddress(), false,
+                    "Invalid credentials"), ct);
             return Error.Unauthorized("Auth.Login", "Invalid Credintionals");
+        }
 
         if (!user.IsActive)
+        {
+            await auditService.LogAsync(
+                AuditLog.Login(string.Empty, request.Email, request.Email, IpAddress(), false,
+                    "Invalid credentials"), ct);
             return Error.Unauthorized("Auth.Login", "User Not Active");
+        }
 
         if (!await userManager.CheckPasswordAsync(user, request.Password))
+        {
+            await auditService.LogAsync(
+                AuditLog.Login(string.Empty, request.Email, request.Email, IpAddress(), false,
+                    "Invalid credentials"), ct);
             return Error.Unauthorized("Auth.Login", "Invalid Credintionals");
+        }
 
         var (roles, permissions) = await GetUserRoleAndClaims(user, ct);
         var (token, expireMinutes) = jwtProvider.GenerateToken(user, roles, permissions);
@@ -112,7 +130,15 @@ internal sealed class AuthService(
 
         user.UpdateLastLogin();
         await userManager.UpdateAsync(user);
-
+        await auditService.LogAsync(
+            AuditLog.Login(
+                userId: user.Id,
+                userName: user.UserName!,
+                email: user.Email!,
+                ip: IpAddress(),
+                success: true
+                ),
+            ct);
 
         return new AuthResponse(token, refreshToken, DateTime.UtcNow.AddMinutes(expireMinutes));
     }
@@ -137,6 +163,7 @@ internal sealed class AuthService(
         userRefreshToken.RevokeOn = DateTime.UtcNow;
 
         await userManager.UpdateAsync(user);
+        await auditService.LogAsync(AuditLog.TokenRevoked(user.Id, IpAddress()), ct);
 
         return Result.Success();
     }
@@ -158,5 +185,14 @@ internal sealed class AuthService(
             .ToListAsync(ct);
 
         return (roles, permission);
+    }
+    private string? IpAddress()
+    {
+        if (httpContextAccessor.HttpContext is not { } ctx)
+            return null;
+
+        return ctx.Connection.RemoteIpAddress?.ToString()
+                 ?? ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+
     }
 }

@@ -57,9 +57,18 @@ public static class DefaultPermissions
         public static IList<string> All =>
             typeof(Permissions).GetFields().Select(f => f.GetValue(f) as string).ToList()!;
     }
+    public static class Audit
+    {
+        public static string GroupName => nameof(Audit);
+        public const string Read = "audit.read";
+        public const string Export = "audit.export";
+        public static IList<string> All =>
+            typeof(Audit).GetFields().Select(f => f.GetValue(f) as string).ToList()!;
+    }
     public static readonly IReadOnlyList<string> AllDefaultPermissions = [
         .. Users.All, 
         .. Roles.All, 
         .. Departments.All,
-        .. Permissions.All];
+        .. Permissions.All,
+        .. Audit.All];
 }

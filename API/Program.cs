@@ -17,14 +17,14 @@ builder.Services.AddCors(options =>
     options.AddPolicy("Policy1",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173")
+            policy.WithOrigins("http://localhost:4200")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
         });
 });
 
-
+// DefaultPassword123!
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

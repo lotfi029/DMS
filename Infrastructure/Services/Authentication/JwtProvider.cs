@@ -17,7 +17,7 @@ public class JwtProvider(
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Name, $"{user.UserName} {user.LastName}" ?? string.Empty)
+            new(ClaimTypes.Name, user.UserName!)
         };
 
         if (roles is not null && roles.Any())
