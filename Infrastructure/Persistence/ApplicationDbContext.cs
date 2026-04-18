@@ -17,7 +17,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         modelBuilder.HasDefaultSchema("dms");
 
-        modelBuilder.Entity<Department>().ToTable("departments");
         modelBuilder.Entity<AuditLog>().ToTable("audit_logs");
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
