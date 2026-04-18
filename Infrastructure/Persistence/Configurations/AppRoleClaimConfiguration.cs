@@ -17,5 +17,8 @@ internal class AppRoleClaimConfiguration : IEntityTypeConfiguration<ApplicationR
         builder.Property(rc => rc.Group)
             .HasMaxLength(256)
             .HasColumnName("group");
+
+        builder.Property(e => e.Id)
+            .ValueGeneratedOnAdd();
     }
 }

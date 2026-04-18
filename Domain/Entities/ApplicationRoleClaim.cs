@@ -1,8 +1,6 @@
-﻿using System.Globalization;
+﻿namespace Domain.Entities;
 
-namespace Domain.Entities;
-
-public class ApplicationRoleClaim : IdentityRoleClaim<string>
+public class ApplicationRoleClaim : IdentityRoleClaim<string>, IAuditable
 {
     public string Group { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;

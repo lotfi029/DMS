@@ -1,10 +1,8 @@
-﻿using Application.DTOs.Audits;
-
-namespace Infrastructure.Services;
+﻿namespace Infrastructure.Services;
 
 internal sealed class AuditService(
     ApplicationDbContext dbContext,
-    AuditContextAccessor contextAccessor,
+    IAuditContextAccessor contextAccessor,
     ILogger<AuditService> logger) : IAuditService
 {
     // ── Write ─────────────────────────────────────────────────────────────────
@@ -18,9 +16,8 @@ internal sealed class AuditService(
         }
         catch (Exception ex)
         {
-            // Never let audit failure crash the application
-            logger.LogError(ex, "Failed to persist audit log entry. Action={Action} Entity={Entity}",
-                entry.Action, entry.EntityName);
+            logger.LogError(ex, LogMessages.Audit_LogFailed,
+                entry.Action, entry.EntityName, ex.Message);
         }
     }
 

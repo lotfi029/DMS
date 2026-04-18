@@ -7,21 +7,27 @@ public sealed class RoleClaimSeeder(
 {
     public async Task SeedingRoleClaimsAsync()
     {
-        foreach(var role in RolePermissions.DefaultRolePermissions)
+        foreach (var (role, permissions) in RolePermissions.DefaultRolePermissions)
         {
-            if (await roleManager.RoleExistsAsync(role.Key.Name!))
-            {
-                // TODO:
-                if (await roleManager.GetClaimsAsync(role.Key) is { } claims && claims.Any())
-                    continue;
-                
-                
-                var addedClaims = role.Value.Select(claim => ApplicationRoleClaim.Create(role.Key.Id, DefaultPermissions.ClaimType, claim));
+            if (!await roleManager.RoleExistsAsync(role.Name!))
+                continue;
 
-                dbContext.RoleClaims.AddRange(addedClaims);
-                await dbContext.SaveChangesAsync();
-                logger.LogInformation("Claims for role '{RoleName}' added successfully.", role.Key.Name);
+            var existingClaims = await roleManager.GetClaimsAsync(role);
+            if (existingClaims.Any())
+            {
+                logger.LogInformation(LogMessages.DB_SeedSkipped, "RoleClaims", role.Name);
+                continue;
             }
+
+            logger.LogInformation(LogMessages.DB_SeedStarted, $"RoleClaims:{role.Name}");
+
+            var claims = permissions.Select(p =>
+                ApplicationRoleClaim.Create(role.Id, DefaultPermissions.ClaimType, p));
+
+            dbContext.RoleClaims.AddRange(claims);
+            await dbContext.SaveChangesAsync();
+
+            logger.LogInformation(LogMessages.DB_SeedCompleted, $"RoleClaims:{role.Name}");
         }
     }
 }

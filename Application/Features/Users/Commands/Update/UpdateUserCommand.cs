@@ -6,7 +6,8 @@ public sealed record UpdateUserCommand(string UserId, UpdateUserRequest Request)
 
 public sealed class UpdateUserCommandHandler(
     IUserDomainService userService,
-    IAuditService auditService) : ICommandHandler<UpdateUserCommand>
+    IAuditService auditService,
+    ILogger<UpdateUserCommandHandler> logger) : ICommandHandler<UpdateUserCommand>
 {
     public async Task<Result> HandleAsync(UpdateUserCommand command, CancellationToken ct = default)
     {
@@ -16,14 +17,20 @@ public sealed class UpdateUserCommandHandler(
             command.Request.LastName,
             ct);
 
-        if (result.IsFailure) 
+        if (result.IsFailure)
+        {
+            logger.LogWarning(LogMessages.User_UpdateFailed, command.UserId, result.Error.Description);
             return result.Error;
+        }
+
+        logger.LogInformation(LogMessages.User_Updated, command.UserId);
 
         await auditService.LogActionAsync(
-            AuditAction.UserUpdated, "Users", "ApplicationUser",
+            AuditAction.UserUpdated, AuditModules.Users, AuditEntityNames.User,
             entityId: command.UserId,
             description: $"User '{command.UserId}' profile updated.",
-            newValues: JsonSerializer.Serialize(command.Request), ct: ct);
+            newValues: JsonSerializer.Serialize(command.Request), 
+            ct: ct);
 
         return Result.Success();
     }

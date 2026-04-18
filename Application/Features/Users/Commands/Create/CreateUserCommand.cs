@@ -7,11 +7,15 @@ public sealed record CreateUserCommand(AddUserRequest Request) : ICommand<Create
 public sealed class CreateUserCommandHandler(
     IAuthService authService,
     IAuditService auditService,
-    IDepartmentDomainService departmentDomainService) : ICommandHandler<CreateUserCommand, CreateUserResponse>
+    IDepartmentDomainService departmentDomainService,
+    ILogger<CreateUserCommandHandler> logger) : ICommandHandler<CreateUserCommand, CreateUserResponse>
 {
     public async Task<Result<CreateUserResponse>> HandleAsync(CreateUserCommand command, CancellationToken ct = default)
     {
+        logger.LogInformation(LogMessages.User_Created, command.Request.UserName, command.Request.Email);
+        
         //TODO: validate the role and department existence before creating the user
+
         var newUser = new CreateUserRequest(
             command.Request.FirstName,
             command.Request.LastName,
@@ -23,16 +27,19 @@ public sealed class CreateUserCommandHandler(
         var registerResult = await authService.RegisterAsync(command.Request.RoleId!, newUser, ct);
 
         if (registerResult.IsFailure)
+        {
+            logger.LogWarning(LogMessages.User_CreateFailed, command.Request.UserName, registerResult.Error.Description);
             return registerResult.Error;
+        }
 
         if (command.Request.DepartmentId.HasValue)
         {
             var departmentResult = await departmentDomainService
                 .AddUserAsync(
-                registerResult.Value!,
-                command.Request.DepartmentId.Value,
-                ct
-            );
+                    registerResult.Value!,
+                    command.Request.DepartmentId.Value,
+                    ct
+                );
 
             if (departmentResult.IsFailure)
                 return departmentResult.Error;
@@ -43,21 +50,22 @@ public sealed class CreateUserCommandHandler(
             UserName: newUser.UserName,
             Email: newUser.Email,
             Password: newUser.Password);
-        // After successful creation, add:
+
+        logger.LogInformation(LogMessages.User_Created, registerResult.Value, command.Request.UserName);
+
         await auditService.LogActionAsync(
             action: AuditAction.UserCreated,
-            module: "Users",
-            entityName: "ApplicationUser",
+            module: AuditModules.Users,
+            entityName: AuditEntityNames.User,
             entityId: registerResult.Value,
             description: $"User '{command.Request.UserName}' created.",
             newValues: JsonSerializer.Serialize(new
             {
-                command.Request.FirstName,
-                command.Request.LastName,
-                command.Request.Email,
-                command.Request.UserName
+                command.Request.FirstName, command.Request.LastName,
+                command.Request.Email, command.Request.UserName
             }),
             ct: ct);
+
         return Result.Success(response);
     }
 }

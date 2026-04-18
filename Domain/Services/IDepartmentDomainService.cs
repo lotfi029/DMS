@@ -2,7 +2,7 @@ namespace Domain.Services;
 
 public interface IDepartmentDomainService
 {
-    Task<Result> CreateAsync(string name, string? description, CancellationToken ct = default);
+    Task<Result<Guid>> CreateAsync(string name, string? description, CancellationToken ct = default);
     Task<Result> AddUserAsync(string userId, Guid departmentId, CancellationToken ct = default);
     Task<Result> UpdateAsync(Guid id, string name, string? description, CancellationToken ct = default);
     Task<Result> MoveUserAsync(string userId, Guid newDepartmentId, CancellationToken ct = default);

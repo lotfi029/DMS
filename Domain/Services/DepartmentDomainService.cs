@@ -21,7 +21,7 @@ public class DepartmentDomainService(
     {
         return Result.Success(await userRepository.GetAllAsync(predicate, ct));
     }
-    public async Task<Result> CreateAsync(string name, string? description, CancellationToken ct = default)
+    public async Task<Result<Guid>> CreateAsync(string name, string? description, CancellationToken ct = default)
     {
         var entity = Department.Create(name, description);
 
@@ -30,7 +30,7 @@ public class DepartmentDomainService(
 
         departmentRepository.Add(entity, ct);
 
-        return Result.Success();
+        return Result.Success(entity.Id);
     }
     public async Task<Result> AddUserAsync(string userId, Guid departmentId, CancellationToken ct = default)
     {

@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities;
 
-public class ApplicationUser : IdentityUser
+public class ApplicationUser : IdentityUser, IAuditable
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;

@@ -1,8 +1,6 @@
-﻿using Application.DTOs.Audits;
+﻿namespace Infrastructure.Services;
 
-namespace Infrastructure.Services;
-
-internal sealed class AuditContextAccessor (IHttpContextAccessor httpContextAccessor)
+internal sealed class AuditContextAccessor(IHttpContextAccessor httpContextAccessor) : IAuditContextAccessor
 {
     public AuditContext GetCurrent()
     {

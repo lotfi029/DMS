@@ -108,28 +108,3 @@ public sealed class AuditLog : Entity
             );
 
 }
-
-
-public enum AuditAction
-{
-    Login = 1, Logout, TokenRefreshed, TokenRevoked,
-    PasswordChanged, PasswordResetRequested,
-
-    UserCreated = 100, UserUpdated, UserDeleted,
-    UserActivated, UserDeactivated, UserViewed, UserListed,
-
-    RoleCreated = 200, RoleUpdated, RoleDeleted,
-    RoleAssignedToUser, RoleRemovedFromUser,
-
-    PermissionAssignedToRole = 300, PermissionRemovedFromRole, PermissionViewed,
-
-    DepartmentCreated = 400, DepartmentUpdated, DepartmentDeleted,
-    DepartmentViewed, DepartmentListed,
-    UserAddedToDepartment, UserRemovedFromDepartment, UserMovedBetweenDepartments,
-
-    Read = 900, Create, Update, Delete, Export, Import,
-}
-public enum AuditOutcome
-{
-    Success = 1, Failure, Unauthorized, NotFound, ValidationError
-}

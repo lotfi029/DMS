@@ -1,4 +1,5 @@
-﻿using Infrastructure.Services.Authentication.Filters;
+﻿using Infrastructure.Persistence.Interceptors;
+using Infrastructure.Services.Authentication.Filters;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Infrastructure;
@@ -13,14 +14,18 @@ public static class DependancyInjection
             configuration.GetConnectionString("DefaultConnection") 
             ?? throw new ArgumentException("no connection string specified to start the application!");
 
-        services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.UseNpgsql(connectionString);
+            options.AddInterceptors(sp.GetRequiredService<AuditSaveChangeInterceptor>());
         });
+        services.AddScoped<AuditSaveChangeInterceptor>();
 
         services.RegisterSeeders();
 
         services.AddSingleton<IAuthorizationHandler, PermissionAutherizationHandler>();
+
+        services.AddHttpContextAccessor();
 
         // Identity configuration
         services.AddIdentity<ApplicationUser, ApplicationRole>()
@@ -70,7 +75,7 @@ public static class DependancyInjection
         services.AddScoped<IPermissionService, PermissionService>();
 
         services.AddScoped<IAuditService, AuditService>();
-        services.AddScoped<AuditContextAccessor>();
+        services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
 
         return services;
     }

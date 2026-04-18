@@ -1,7 +1,4 @@
 ﻿using Application.DTOs.Audits;
-using Application.Interfaces;
-using Domain.Entities;
-using Mapster;
 
 namespace API.Endpoints;
 

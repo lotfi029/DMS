@@ -2,7 +2,10 @@ namespace Application.Features.Users.Queries.GetById;
 
 public sealed record GetUserByIdQuery(string UserId) : IQuery<DetailedUserResponse>;
 
-public sealed class GetUserByIdQueryHandler(IUserDomainService userService) : IQueryHandler<GetUserByIdQuery, DetailedUserResponse>
+public sealed class GetUserByIdQueryHandler(
+    IUserDomainService userService,
+    IAuditService auditService,
+    IAuditContextAccessor auditContextAccessor) : IQueryHandler<GetUserByIdQuery, DetailedUserResponse>
 {
     public async Task<Result<DetailedUserResponse>> HandleAsync(GetUserByIdQuery query, CancellationToken ct = default)
     {
@@ -11,6 +14,14 @@ public sealed class GetUserByIdQueryHandler(IUserDomainService userService) : IQ
             return userResult.Error;
 
         var user = userResult.Value!.Adapt<DetailedUserResponse>();
+        
+        await auditService.LogActionAsync(
+            action: AuditAction.UserViewed,
+            module: AuditModules.Users,
+            entityName: AuditEntityNames.User,
+            entityId: auditContextAccessor.GetCurrent().UserId,
+            ct: ct,
+            outcome: AuditOutcome.Success);
 
         return user;
     }

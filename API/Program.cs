@@ -24,7 +24,6 @@ builder.Services.AddCors(options =>
         });
 });
 
-// DefaultPassword123!
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

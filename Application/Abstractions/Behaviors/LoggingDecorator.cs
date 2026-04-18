@@ -12,16 +12,16 @@ internal sealed class LoggingDecorator
         {
             string requestName = typeof(TCommand).Name;
 
-            logger.LogInformation("Handling command {RequestName}", requestName);
+            logger.LogInformation(LogMessages.Command_Handling, requestName);
 
             Result<TResponse> result = await innerHandler.HandleAsync(command, ct);
             if (result.IsSuccess)
             {
-                logger.LogInformation("Command {RequestName} handled successfully", requestName);
+                logger.LogInformation(LogMessages.Command_Succeeded, requestName);
             }
             else
             {
-                logger.LogWarning("Command {RequestName} failed with errors", requestName);
+                logger.LogWarning(LogMessages.Command_Failed, requestName, result.Error.Description);
             }
             return result;
         }
@@ -36,16 +36,16 @@ internal sealed class LoggingDecorator
         {
             string requestName = typeof(TCommand).Name;
 
-            logger.LogInformation("Handling command {RequestName}", requestName);
+            logger.LogInformation(LogMessages.Command_Handling, requestName);
 
             Result result = await innerHandler.HandleAsync(command, ct);
             if (result.IsSuccess)
             {
-                logger.LogInformation("Command {RequestName} handled successfully", requestName);
+                logger.LogInformation(LogMessages.Command_Succeeded, requestName);
             }
             else
             {
-                logger.LogWarning("Command {RequestName} failed with errors", requestName);
+                logger.LogWarning(LogMessages.Command_Failed, requestName, result.Error.Description);
             }
             return result;
         }
@@ -60,16 +60,16 @@ internal sealed class LoggingDecorator
         {
             string requestName = typeof(TQuery).Name;
 
-            logger.LogInformation("Handling query {RequestName}", requestName);
+            logger.LogInformation(LogMessages.Query_Handling, requestName);
 
             Result<TResponse> result = await innerHandler.HandleAsync(command, ct);
             if (result.IsSuccess)
             {
-                logger.LogInformation("Query {RequestName} handled successfully", requestName);
+                logger.LogInformation(LogMessages.Query_Succeeded, requestName);
             }
             else
             {
-                logger.LogWarning("Query {RequestName} failed with errors", requestName);
+                logger.LogWarning(LogMessages.Query_Failed, requestName, result.Error.Description);
             }
             return result;
         }

@@ -1,17 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json;
-
-namespace Infrastructure.Persistence.Interceptors;
+﻿namespace Infrastructure.Persistence.Interceptors;
 
 internal sealed class AuditSaveChangeInterceptor(
     IHttpContextAccessor httpContextAccessor,
     ILogger<AuditSaveChangeInterceptor> logger) : SaveChangesInterceptor
 {
-    private static readonly JsonSerializerOptions JsonOpts =
+    private static readonly JsonSerializerOptions _jsonOpts =
         new() { WriteIndented = false };
 
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
@@ -51,52 +44,15 @@ internal sealed class AuditSaveChangeInterceptor(
 
             var entityName = entry.Metadata.ClrType.Name;
             var entityId = GetPrimaryKey(entry);
-            var action = entry.State switch
-            {
-                EntityState.Added => AuditAction.Create,
-                EntityState.Modified => AuditAction.Update,
-                EntityState.Deleted => AuditAction.Delete,
-                _ => AuditAction.Read
-            };
+            var action = MapAction(entry.State);
+            var module = ResolveModule(entityName);
 
-            string? oldValues = null;
-            string? newValues = null;
-            string? changedCols = null;
-
-            if (entry.State == EntityState.Modified)
-            {
-                var changed = entry.Properties
-                    .Where(p => p.IsModified)
-                    .ToList();
-
-                oldValues = JsonSerializer.Serialize(
-                    changed.ToDictionary(p => p.Metadata.Name, p => p.OriginalValue),
-                    JsonOpts);
-                newValues = JsonSerializer.Serialize(
-                    changed.ToDictionary(p => p.Metadata.Name, p => p.CurrentValue),
-                    JsonOpts);
-                changedCols = JsonSerializer.Serialize(
-                    changed.Select(p => p.Metadata.Name), JsonOpts);
-            }
-            else if (entry.State == EntityState.Added)
-            {
-                newValues = JsonSerializer.Serialize(
-                    entry.Properties.ToDictionary(
-                        p => p.Metadata.Name, p => p.CurrentValue),
-                    JsonOpts);
-            }
-            else if (entry.State == EntityState.Deleted)
-            {
-                oldValues = JsonSerializer.Serialize(
-                    entry.Properties.ToDictionary(
-                        p => p.Metadata.Name, p => p.OriginalValue),
-                    JsonOpts);
-            }
+            var (oldValues, newValues, changedCols) = BuildChangeSets(entry);
 
             entries.Add(AuditLog.Create(
                 action: action,
                 entityName: entityName,
-                module: ResolveModule(entityName),
+                module: module,
                 entityId: entityId,
                 userId: userId,
                 userName: userName,
@@ -110,6 +66,35 @@ internal sealed class AuditSaveChangeInterceptor(
 
         return entries;
     }
+    private static (string? old, string? @new, string? cols) BuildChangeSets(EntityEntry entry)
+    {
+        string? oldValues = null, newValues = null, changedCols = null;
+
+        if (entry.State == EntityState.Modified)
+        {
+            var changed = entry.Properties.Where(p => p.IsModified).ToList();
+            oldValues = Serialize(changed.ToDictionary(p => p.Metadata.Name, p => p.OriginalValue));
+            newValues = Serialize(changed.ToDictionary(p => p.Metadata.Name, p => p.CurrentValue));
+            changedCols = Serialize(changed.Select(p => p.Metadata.Name));
+        }
+        else if (entry.State == EntityState.Added)
+        {
+            newValues = Serialize(entry.Properties.ToDictionary(p => p.Metadata.Name, p => p.CurrentValue));
+        }
+        else if (entry.State == EntityState.Deleted)
+        {
+            oldValues = Serialize(entry.Properties.ToDictionary(p => p.Metadata.Name, p => p.OriginalValue));
+        }
+
+        return (oldValues, newValues, changedCols);
+    }
+    private static AuditAction MapAction(EntityState state) => state switch
+    {
+        EntityState.Added => AuditAction.Create,
+        EntityState.Modified => AuditAction.Update,
+        EntityState.Deleted => AuditAction.Delete,
+        _ => AuditAction.Read
+    };
     private static string? GetPrimaryKey(EntityEntry entry)
     {
         try
@@ -126,13 +111,14 @@ internal sealed class AuditSaveChangeInterceptor(
 
     private static string ResolveModule(string entityName) => entityName switch
     {
-        "ApplicationUser" => "Users",
-        "ApplicationRole" => "Roles",
-        "Department" => "Departments",
-        "ApplicationRoleClaim" => "RoleClaims",
-        _ => "System"
+        AuditEntityNames.User => AuditModules.Users,
+        AuditEntityNames.Department => AuditModules.Departments,
+        AuditEntityNames.Role => AuditModules.Roles,
+        AuditEntityNames.RoleClaim => AuditModules.Permissions,
+        _ => AuditModules.System
     };
-
+    private static string Serialize<T>(T value) =>
+        JsonSerializer.Serialize(value, _jsonOpts);
 }
 
-public interface IAuditable { }
+

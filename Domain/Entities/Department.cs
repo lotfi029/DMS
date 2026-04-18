@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities;
 
-public class Department: Entity
+public class Department: Entity, IAuditable
 {
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
