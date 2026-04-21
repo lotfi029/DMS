@@ -13,11 +13,19 @@ internal sealed class AuthService(
     ) : IAuthService
 {
     private readonly int _refreshTokenExpiryDays = 14;
-    private readonly AuditContext currentContext = auditContextAccessor.GetCurrent();
-    public async Task<Result<string>> RegisterAsync(string roleId, CreateUserRequest request, CancellationToken ct = default)
+    private readonly AuditContext _currentContext = auditContextAccessor.GetCurrent();
+    public async Task<Result<string>> RegisterAsync(string roleId, RegisterRequest request, CancellationToken ct = default)
     {
         if (await userManager.Users.AnyAsync(e => e.Email == request.Email, ct))
             return AuthErrors.DuplicatedEmail(request.Email);
+
+        string roleName = DefaultRoles.Employee.Name!;
+
+        if (!string.IsNullOrEmpty(roleId) && await roleManager.FindByIdAsync(roleId) is { } role)
+        {
+            roleName = role.Name!;
+        }
+        else return RoleErrors.NotFound;
 
         var user = ApplicationUser.Create(
             id: Guid.CreateVersion7().ToString(),
@@ -28,26 +36,13 @@ internal sealed class AuthService(
         );
 
         var result = await userManager.CreateAsync(user, request.Password);
+        
         if (!result.Succeeded)
             return Error.BadRequest("Auth.Register", string.Join(", ", result.Errors.Select(e => e.Description)));
 
-        if (!string.IsNullOrEmpty(roleId))
-        {
-            if (await roleManager.FindByIdAsync(roleId) is not { } role)
-                return RoleErrors.NotFound;
-
-            var roleResult = await userManager.AddToRoleAsync(user, role.Name!);
-            if (!roleResult.Succeeded)
-                return Error.BadRequest("Auth.Register", string.Join(", ", roleResult.Errors.Select(e => e.Description)));
-        }
-        else
-        {
-            var roleResult = await userManager
-                .AddToRoleAsync(user, DefaultRoles.Employee.Name!);
-            
-            if (!roleResult.Succeeded)
-                return Error.BadRequest("Auth.Register", string.Join(", ", roleResult.Errors.Select(e => e.Description)));
-        }
+        var roleResult = await userManager.AddToRoleAsync(user, role.Name!);
+        if (!roleResult.Succeeded)
+            return Error.BadRequest("Auth.Register", string.Join(", ", roleResult.Errors.Select(e => e.Description)));    
 
         return Result.Success(user.Id);
     }
@@ -88,7 +83,7 @@ internal sealed class AuthService(
 
         await userManager.UpdateAsync(user);
         logger.LogInformation(LogMessages.Auth_TokenRefreshed, user.Id);
-        await auditService.LogAsync(AuditLog.TokenRefreshed(user.Id, currentContext.IpAddress), ct);
+        await auditService.LogAsync(AuditLog.TokenRefreshed(user.Id, _currentContext.IpAddress), ct);
 
         return new AuthResponse(newToken, newRefreshToken, DateTime.UtcNow.AddMinutes(expiresIn));
     }
@@ -100,7 +95,7 @@ internal sealed class AuthService(
         {
             logger.LogInformation(LogMessages.Auth_LoginFailed, request.Email, "Invalid credentials");
             await auditService.LogAsync(
-                AuditLog.Login(string.Empty, request.Email, request.Email, currentContext.IpAddress, false,
+                AuditLog.Login(string.Empty, request.Email, request.Email, _currentContext.IpAddress, false,
                     "Invalid credentials"), ct);
             return Error.Unauthorized("Auth.Login", "Invalid Credintionals");
         }
@@ -109,7 +104,7 @@ internal sealed class AuthService(
         {
             logger.LogWarning(LogMessages.Auth_LoginFailed, request.Email, "Account inactive");
             await auditService.LogAsync(
-                AuditLog.Login(string.Empty, request.Email, request.Email, currentContext.IpAddress, false,
+                AuditLog.Login(string.Empty, request.Email, request.Email, _currentContext.IpAddress, false,
                     "Invalid credentials"), ct);
             return Error.Unauthorized("Auth.Login", "User Not Active");
         }
@@ -118,7 +113,7 @@ internal sealed class AuthService(
         {
             logger.LogWarning(LogMessages.Auth_LoginFailed, request.Email, "Invalid password");
             await auditService.LogAsync(
-                AuditLog.Login(string.Empty, request.Email, request.Email, currentContext.IpAddress, false,
+                AuditLog.Login(string.Empty, request.Email, request.Email, _currentContext.IpAddress, false,
                     "Invalid credentials"), ct);
             return Error.Unauthorized("Auth.Login", "Invalid Credintionals");
         }
@@ -138,13 +133,13 @@ internal sealed class AuthService(
         user.UpdateLastLogin();
         await userManager.UpdateAsync(user);
 
-        logger.LogInformation(LogMessages.Auth_LoginSuccess, user.UserName, currentContext.IpAddress);
+        logger.LogInformation(LogMessages.Auth_LoginSuccess, user.UserName, _currentContext.IpAddress);
         await auditService.LogAsync(
             AuditLog.Login(
                 userId: user.Id,
                 userName: user.UserName!,
                 email: user.Email!,
-                ip: currentContext.IpAddress,
+                ip: _currentContext.IpAddress,
                 success: true
                 ),
             ct);
@@ -173,7 +168,7 @@ internal sealed class AuthService(
 
         await userManager.UpdateAsync(user);
         logger.LogInformation(LogMessages.Auth_TokenRevoked, user.Id);
-        await auditService.LogAsync(AuditLog.TokenRevoked(user.Id, currentContext.IpAddress), ct);
+        await auditService.LogAsync(AuditLog.TokenRevoked(user.Id, _currentContext.IpAddress), ct);
 
         return Result.Success();
     }

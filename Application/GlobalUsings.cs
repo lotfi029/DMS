@@ -13,6 +13,7 @@ global using Domain.IRepositories;
 global using Domain.Constants;
 global using Domain.Services;
 global using Domain.Entities;
+global using Domain.Errors;
 global using Domain.Enums;
 
 global using SharedKernel;

@@ -1,6 +1,6 @@
 ﻿namespace Application.DTOs.Auths;
 
-public sealed record CreateUserRequest(
+public sealed record RegisterRequest(
     string FirstName,
     string LastName,
     string Password,

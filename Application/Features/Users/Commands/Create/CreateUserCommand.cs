@@ -8,15 +8,17 @@ public sealed class CreateUserCommandHandler(
     IAuthService authService,
     IAuditService auditService,
     IDepartmentDomainService departmentDomainService,
+    IDepartmentRepository departmentRepository,
     ILogger<CreateUserCommandHandler> logger) : ICommandHandler<CreateUserCommand, CreateUserResponse>
 {
     public async Task<Result<CreateUserResponse>> HandleAsync(CreateUserCommand command, CancellationToken ct = default)
     {
         logger.LogInformation(LogMessages.User_Created, command.Request.UserName, command.Request.Email);
-        
-        //TODO: validate the role and department existence before creating the user
 
-        var newUser = new CreateUserRequest(
+        if (await ValidatedAsync(command, ct) is { IsFailure: true } errors)
+            return errors.Error;
+
+        var newUser = new RegisterRequest(
             command.Request.FirstName,
             command.Request.LastName,
             command.Request.Password,
@@ -67,5 +69,16 @@ public sealed class CreateUserCommandHandler(
             ct: ct);
 
         return Result.Success(response);
+    }
+
+    private async Task<Result> ValidatedAsync(CreateUserCommand command, CancellationToken ct = default)
+    {
+        var departmentExists = command.Request.DepartmentId.HasValue &&
+            await departmentRepository.ExistsAsync(x => x.Id == command.Request.DepartmentId, ct) || !command.Request.DepartmentId.HasValue;
+
+        if (!departmentExists)
+            return DepartmentErrors.UserNotInDepartment;
+
+        return Result.Success();
     }
 }

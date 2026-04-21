@@ -37,10 +37,10 @@ public class DepartmentDomainService(
         if (!await userRepository.ExistsAsync(e => e.Id == userId && e.IsActive, ct))
             return UserErrors.NotFound;
 
-        if (await userRepository.ExistsAsync(e => e.DepartmentId == departmentId, ct))
+        if (await userRepository.ExistsAsync(e => e.Id == userId && e.DepartmentId == departmentId, ct))
             return DepartmentErrors.AlreadyInDepartment;
 
-        if (await departmentRepository.ExistsAsync(e => e.Id == departmentId, ct))
+        if (!await departmentRepository.ExistsAsync(e => e.Id == departmentId, ct))
             return DepartmentErrors.NotFound;
 
         var rowsAffected = await userRepository.ExecuteUpdateAsync(
@@ -58,10 +58,10 @@ public class DepartmentDomainService(
         if (!await userRepository.ExistsAsync(e => e.Id == userId && e.IsActive, ct))
             return UserErrors.NotFound;
 
-        if (await userRepository.ExistsAsync(e => e.DepartmentId == newDepartmentId, ct))
+        if (await userRepository.ExistsAsync(e => e.Id == userId && e.DepartmentId == newDepartmentId, ct))
             return DepartmentErrors.AlreadyInDepartment;
 
-        if (await departmentRepository.ExistsAsync(e => e.Id == newDepartmentId, ct))
+        if (!await departmentRepository.ExistsAsync(e => e.Id == newDepartmentId, ct))
             return DepartmentErrors.NotFound;
 
         var rowsAffected = await userRepository.ExecuteUpdateAsync(
