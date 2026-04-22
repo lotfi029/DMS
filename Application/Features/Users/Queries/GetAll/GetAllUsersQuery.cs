@@ -9,12 +9,12 @@ public sealed class GetAllUsersQueryHandler(
     public async Task<Result<IEnumerable<UserListResponse>>> HandleAsync(GetAllUsersQuery query, CancellationToken ct = default)
     {
         var response = await userService.GetAllAsync(query.UserId, ct);
-        
+
         if (response.IsFailure)
             return Result.Success(Enumerable.Empty<UserListResponse>());
 
         var result = response.Value.Adapt<IEnumerable<UserListResponse>>()!;
-        
+
         await auditService.LogActionAsync(
             action: AuditAction.UserListed,
             module: AuditModules.Users,

@@ -1,27 +1,43 @@
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace Infrastructure.Repositories;
+namespace Infrastructure.Persistence.Repositories;
 
 public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepository<T> where T : class
 {
     protected readonly ApplicationDbContext DbContext = dbContext;
 
-    public async Task<T?> GetByIdAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default)
+    public async Task<T?> GetByIdAsync(Expression<Func<T, bool>> predicate, string[]? include = null, CancellationToken ct = default)
     {
-        return await DbContext.Set<T>().SingleOrDefaultAsync(predicate, ct);
+        var query = DbContext.Set<T>().AsQueryable();
+
+        if (include != null)
+        {
+            foreach (var navigationProperty in include)
+            {
+                query = query.Include(navigationProperty);
+            }
+        }
+
+        return await query.SingleOrDefaultAsync(predicate, ct);
     }
 
     public async Task<IEnumerable<T>> GetAllAsync(CancellationToken ct = default)
     {
         return await DbContext.Set<T>().ToListAsync(ct);
     }
-    public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default)
+    public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate, string[]? include = null, CancellationToken ct = default)
     {
-        var query = await DbContext.Set<T>()
-            .Where(predicate)
-            .ToListAsync(ct);
+        var query = DbContext.Set<T>().AsQueryable();
 
-        return query;
+        if (include != null)
+        {
+            foreach (var navigationProperty in include)
+            {
+                query = query.Include(navigationProperty);
+            }
+        }
+
+        return await query.Where(predicate).ToListAsync(ct);
     }
 
     public void Add(T entity, CancellationToken ct = default)

@@ -29,7 +29,7 @@ public sealed class UpdateUserCommandHandler(
             AuditAction.UserUpdated, AuditModules.Users, AuditEntityNames.User,
             entityId: command.UserId,
             description: $"User '{command.UserId}' profile updated.",
-            newValues: JsonSerializer.Serialize(command.Request), 
+            newValues: JsonSerializer.Serialize(command.Request),
             ct: ct);
 
         return Result.Success();

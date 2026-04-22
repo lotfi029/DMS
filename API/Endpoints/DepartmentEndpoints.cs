@@ -96,13 +96,13 @@ internal sealed class DepartmentEndpoints : IEndpoint
         [FromRoute] Guid id,
         [FromBody] DepartmentUserRequest request,
         [FromServices] IValidator<DepartmentUserRequest> validator,
-        [FromServices] ICommandHandler<RemoveUserFromDepartmentCommand> handler,
+        [FromServices] ICommandHandler<RemoveEmployeeFromDepartmentCommand> handler,
         CancellationToken ct)
     {
         if (await validator.ValidateAsync(request, ct) is { IsValid: false } validationResult)
             return Results.ValidationProblem(validationResult.ToDictionary());
 
-        var command = new RemoveUserFromDepartmentCommand(request.UserId, id);
+        var command = new RemoveEmployeeFromDepartmentCommand(request.UserId, id);
         var result = await handler.HandleAsync(command, ct);
         
         return result.IsSuccess 
@@ -113,13 +113,13 @@ internal sealed class DepartmentEndpoints : IEndpoint
         [FromRoute] Guid id,
         [FromBody] DepartmentUserRequest request,
         [FromServices] IValidator<DepartmentUserRequest> validator,
-        [FromServices] ICommandHandler<MoveUserToDepartmentCommand> handler,
+        [FromServices] ICommandHandler<MoveEmployeeToDepartmentCommand> handler,
         CancellationToken ct)
     {
         if (await validator.ValidateAsync(request, ct) is { IsValid: false } validationResult)
             return Results.ValidationProblem(validationResult.ToDictionary());
         
-        var command = new MoveUserToDepartmentCommand(request.UserId, id);
+        var command = new MoveEmployeeToDepartmentCommand(request.UserId, id);
         var result = await handler.HandleAsync(command, ct);
         
         return result.IsSuccess 
@@ -180,10 +180,10 @@ internal sealed class DepartmentEndpoints : IEndpoint
     }
     private async Task<IResult> GetUserAsync(
         [FromRoute] Guid id,
-        [FromServices] IQueryHandler<GetDepartmentUsersQuery, List<UserListResponse>> handler,
+        [FromServices] IQueryHandler<GetDepartmentEmployeesQuery, List<UserListResponse>> handler,
         CancellationToken ct)
     {
-        var query = new GetDepartmentUsersQuery(id);
+        var query = new GetDepartmentEmployeesQuery(id);
         var result = await handler.HandleAsync(query, ct);
         return result.IsSuccess 
             ? Results.Ok(result.Value) 

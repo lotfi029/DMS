@@ -2,16 +2,16 @@ using System.Text.Json;
 
 namespace Application.Features.Users.Commands.Create;
 
-public sealed record CreateUserCommand(AddUserRequest Request) : ICommand<CreateUserResponse>;
+public sealed record CreateUserCommand(AddUserRequest Request) : ICommand<string>;
 
 public sealed class CreateUserCommandHandler(
     IAuthService authService,
     IAuditService auditService,
     IDepartmentDomainService departmentDomainService,
     IDepartmentRepository departmentRepository,
-    ILogger<CreateUserCommandHandler> logger) : ICommandHandler<CreateUserCommand, CreateUserResponse>
+    ILogger<CreateUserCommandHandler> logger) : ICommandHandler<CreateUserCommand, string>
 {
-    public async Task<Result<CreateUserResponse>> HandleAsync(CreateUserCommand command, CancellationToken ct = default)
+    public async Task<Result<string>> HandleAsync(CreateUserCommand command, CancellationToken ct = default)
     {
         logger.LogInformation(LogMessages.User_Created, command.Request.UserName, command.Request.Email);
 
@@ -26,7 +26,7 @@ public sealed class CreateUserCommandHandler(
             command.Request.UserName
         );
 
-        var registerResult = await authService.RegisterAsync(command.Request.RoleId!, newUser, ct);
+        var registerResult = await authService.RegisterAsync(command.Request.RoleId! ?? string.Empty, newUser, ct);
 
         if (registerResult.IsFailure)
         {
@@ -47,12 +47,6 @@ public sealed class CreateUserCommandHandler(
                 return departmentResult.Error;
         }
 
-        var response = new CreateUserResponse(
-            UserId: registerResult.Value!,
-            UserName: newUser.UserName,
-            Email: newUser.Email,
-            Password: newUser.Password);
-
         logger.LogInformation(LogMessages.User_Created, registerResult.Value, command.Request.UserName);
 
         await auditService.LogActionAsync(
@@ -63,12 +57,14 @@ public sealed class CreateUserCommandHandler(
             description: $"User '{command.Request.UserName}' created.",
             newValues: JsonSerializer.Serialize(new
             {
-                command.Request.FirstName, command.Request.LastName,
-                command.Request.Email, command.Request.UserName
+                command.Request.FirstName,
+                command.Request.LastName,
+                command.Request.Email,
+                command.Request.UserName
             }),
             ct: ct);
 
-        return Result.Success(response);
+        return registerResult.Value!;
     }
 
     private async Task<Result> ValidatedAsync(CreateUserCommand command, CancellationToken ct = default)

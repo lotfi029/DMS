@@ -2,7 +2,6 @@
 using Application.Features.Auths.Commands.Add;
 using Application.Features.Auths.Commands.RefreshToken;
 using Application.Features.Auths.Commands.Revoke;
-using Domain.Entities;
 
 namespace API.Endpoints;
 

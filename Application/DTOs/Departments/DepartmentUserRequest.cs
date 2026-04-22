@@ -1,3 +1,3 @@
 namespace Application.DTOs.Departments;
 
-public sealed record DepartmentUserRequest(string UserId);
+public sealed record DepartmentUserRequest(Guid UserId);

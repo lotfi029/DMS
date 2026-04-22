@@ -1,13 +1,13 @@
 ﻿namespace Application.Features.Departments.Commands.MoveUser;
 
-public sealed record MoveUserToDepartmentCommand(string UserId, Guid ToDepartmentId) : ICommand;
+public sealed record MoveEmployeeToDepartmentCommand(Guid UserId, Guid ToDepartmentId) : ICommand;
 
-internal sealed class MoveUserCommandHandler(
+internal sealed class MoveEmployeeToDepartmentCommandHandler(
     IDepartmentDomainService departmentDomainService,
     IAuditService auditService,
-    ILogger<MoveUserCommandHandler> logger) : ICommandHandler<MoveUserToDepartmentCommand>
+    ILogger<MoveEmployeeToDepartmentCommandHandler> logger) : ICommandHandler<MoveEmployeeToDepartmentCommand>
 {
-    public async Task<Result> HandleAsync(MoveUserToDepartmentCommand command, CancellationToken ct = default)
+    public async Task<Result> HandleAsync(MoveEmployeeToDepartmentCommand command, CancellationToken ct = default)
     {
         var result = await departmentDomainService.MoveUserAsync(command.UserId, command.ToDepartmentId, ct);
 

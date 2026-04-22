@@ -1,3 +1,5 @@
+using Infrastructure.Persistence.Repositories;
+
 namespace Infrastructure.Repositories;
 
 public class DepartmentRepository(ApplicationDbContext dbContext) 

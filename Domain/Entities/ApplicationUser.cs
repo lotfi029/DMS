@@ -5,10 +5,9 @@ public class ApplicationUser : IdentityUser, IAuditable
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
+    public UserType UserType { get; set; } 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime LastLoginAt {  get; set; } = DateTime.UtcNow;
-    public Guid? DepartmentId { get; set; }
-    public Department? Department { get; set; }
     public ICollection<RefreshToken> RefreshTokens { get; set; } = [];
 
     private ApplicationUser() : base() { }
@@ -19,6 +18,7 @@ public class ApplicationUser : IdentityUser, IAuditable
         string email, 
         string firstName, 
         string lastName,
+        UserType userType,
         string? phonenumber = null,
         string? securityStamp = null,
         string? concurrencyStamp = null,
@@ -28,6 +28,7 @@ public class ApplicationUser : IdentityUser, IAuditable
         FirstName = firstName;
         LastName = lastName;
         IsActive = true;
+        UserType = userType;
         CreatedAt = DateTime.UtcNow;
         LastLoginAt = DateTime.UtcNow;
         EmailConfirmed = true;
@@ -48,6 +49,7 @@ public class ApplicationUser : IdentityUser, IAuditable
         string email, 
         string firstName, 
         string lastName,
+        UserType userType,
         string? phonenumber = null,
         string? securityStamp = null,
         string? concurrencyStamp = null,
@@ -59,6 +61,7 @@ public class ApplicationUser : IdentityUser, IAuditable
             email: email, 
             firstName: firstName, 
             lastName: lastName, 
+            userType: userType,
             phonenumber: phonenumber, 
             securityStamp: securityStamp, 
             concurrencyStamp: concurrencyStamp, 
@@ -69,4 +72,12 @@ public class ApplicationUser : IdentityUser, IAuditable
     {
         LastLoginAt = DateTime.UtcNow;
     }
+}
+
+public enum UserType
+{
+    Employee,
+    Client,
+    Vendor,
+    EmployeeSite
 }

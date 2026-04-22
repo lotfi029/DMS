@@ -32,14 +32,14 @@ internal sealed class UserDomainService(
 
     public async Task<Result<IEnumerable<ApplicationUser>>> GetAllAsync(string userId, CancellationToken ct = default)
     {
-        var users = await userRepository.GetAllAsync(x => x.Id != userId, ct);
+        var users = await userRepository.GetAllAsync(x => x.Id != userId, ct: ct);
 
         return Result.Success(users);
     }
 
     public async Task<Result<ApplicationUser>> GetByIdAsync(string userId, CancellationToken ct = default)
     {
-        if (await  userRepository.GetByIdAsync(x => x.Id == userId,ct) is not { } user)
+        if (await  userRepository.GetByIdAsync(x => x.Id == userId, ct: ct) is not { } user)
             return UserErrors.NotFound;
 
         return user;

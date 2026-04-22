@@ -1,6 +1,4 @@
-﻿using Application.DTOs.Permissions;
-
-namespace Application.Interfaces;
+﻿namespace Application.Interfaces;
 
 public interface IPermissionService
 {

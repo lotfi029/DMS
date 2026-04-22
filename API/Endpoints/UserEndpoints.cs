@@ -1,4 +1,3 @@
-using Application.DTOs.Auths;
 using Application.DTOs.Users;
 using Application.Features.Users.Commands.Activate;
 using Application.Features.Users.Commands.Create;
@@ -23,7 +22,7 @@ internal sealed class UserEndpoints : IEndpoint
 
         group.MapPost("/create", CreateUserAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Users.Create))
-            .Produces<CreateUserResponse>(StatusCodes.Status201Created);
+            .Produces<string>(StatusCodes.Status201Created);
 
         group.MapPost("/{id}/deactivate", DeactivateUserAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Users.Deactivate))
@@ -58,7 +57,7 @@ internal sealed class UserEndpoints : IEndpoint
     private async Task<IResult> CreateUserAsync(
         [FromBody] AddUserRequest request,
         [FromServices] IValidator<AddUserRequest> validator,
-        [FromServices] ICommandHandler<CreateUserCommand, CreateUserResponse> handler,
+        [FromServices] ICommandHandler<CreateUserCommand, string> handler,
         CancellationToken ct)
     {
         if (await validator.ValidateAsync(request, ct) is { IsValid: false } validationResult)
@@ -68,7 +67,7 @@ internal sealed class UserEndpoints : IEndpoint
         var result = await handler.HandleAsync(command, ct);
         
         return result.IsSuccess 
-            ? Results.CreatedAtRoute("GetUserById", new { id = result.Value!.UserId }, result.Value)
+            ? Results.CreatedAtRoute("GetUserById", new { id = result.Value! }, result.Value)
             : result.ToProblem();
     }
     private async Task<IResult> UpdateAsync(

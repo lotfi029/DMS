@@ -1,6 +1,4 @@
-﻿using Application.DTOs.Roles;
-
-namespace Application.Interfaces;
+﻿namespace Application.Interfaces;
 
 public interface IRoleService
 {

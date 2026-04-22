@@ -15,7 +15,7 @@ public sealed class GetDepartmentByIdQueryHandler(
             return entity.Error;
 
         var reponse = entity.Value!.Adapt<DepartmentResponse>();
-        
+
         await auditService.LogActionAsync(
             action: AuditAction.DepartmentViewed,
             module: AuditModules.Departments,

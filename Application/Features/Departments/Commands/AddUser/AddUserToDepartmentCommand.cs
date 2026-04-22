@@ -1,6 +1,6 @@
 ﻿namespace Application.Features.Departments.Commands.AddUser;
 
-public sealed record AddUserToDepartmentCommand(string UserId, Guid DepartmentId) : ICommand;
+public sealed record AddUserToDepartmentCommand(Guid EmployeeId, Guid DepartmentId) : ICommand;
 
 internal sealed class AddUserCommandHandler(
     IDepartmentDomainService departmentDomainService,
@@ -9,19 +9,19 @@ internal sealed class AddUserCommandHandler(
 {
     public async Task<Result> HandleAsync(AddUserToDepartmentCommand command, CancellationToken ct = default)
     {
-        var result = await departmentDomainService.AddUserAsync(command.UserId, command.DepartmentId, ct);
+        var result = await departmentDomainService.AddUserAsync(command.EmployeeId, command.DepartmentId, ct);
 
         if (result.IsFailure)
             return result.Error;
 
-        logger.LogInformation(LogMessages.Dept_UserAdded, command.UserId, command.DepartmentId);
+        logger.LogInformation(LogMessages.Dept_UserAdded, command.EmployeeId, command.DepartmentId);
 
         await auditService.LogActionAsync(
             action: AuditAction.UserAddedToDepartment,
             module: AuditModules.Departments,
             entityName: AuditEntityNames.Department,
             entityId: command.DepartmentId.ToString(),
-            description: $"User '{command.UserId}' added to department '{command.DepartmentId}'.",
+            description: $"User '{command.EmployeeId}' added to department '{command.DepartmentId}'.",
             ct: ct);
 
         return Result.Success();

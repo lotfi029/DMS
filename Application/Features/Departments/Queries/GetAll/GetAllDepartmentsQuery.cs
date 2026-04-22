@@ -15,7 +15,7 @@ public sealed class GetAllDepartmentsQueryHandler(
             return entities.Error;
 
         var responses = entities.Value!.Adapt<IEnumerable<DepartmentResponse>>();
-        
+
         await auditService.LogActionAsync(
             action: AuditAction.DepartmentListed,
             module: AuditModules.Departments,

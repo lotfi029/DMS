@@ -14,7 +14,7 @@ public sealed class GetUserByIdQueryHandler(
             return userResult.Error;
 
         var user = userResult.Value!.Adapt<DetailedUserResponse>();
-        
+
         await auditService.LogActionAsync(
             action: AuditAction.UserViewed,
             module: AuditModules.Users,

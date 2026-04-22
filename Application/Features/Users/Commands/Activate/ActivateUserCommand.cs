@@ -8,7 +8,7 @@ public sealed class ActivateUserCommandHandler(
     ILogger<ActivateUserCommandHandler> logger) : ICommandHandler<ActivateUserCommand>
 {
     public async Task<Result> HandleAsync(ActivateUserCommand command, CancellationToken ct = default)
-    {        
+    {
         var result = await userService.ActivateAsync(command.UserId, ct);
         if (result.IsFailure)
         {
@@ -17,7 +17,7 @@ public sealed class ActivateUserCommandHandler(
         }
 
         logger.LogInformation(LogMessages.User_Activated, command.UserId);
-        
+
         await auditService.LogActionAsync(
             AuditAction.UserActivated,
             "Users", "ApplicationUser",

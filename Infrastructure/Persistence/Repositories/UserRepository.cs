@@ -1,3 +1,5 @@
+using Infrastructure.Persistence.Repositories;
+
 namespace Infrastructure.Repositories;
 
 public class UserRepository(ApplicationDbContext dbContext) 
