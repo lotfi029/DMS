@@ -1,18 +1,13 @@
 ﻿namespace Application.DTOs.Employees;
 
-public sealed record EmployeeResponse(
+public sealed record EmployeeListResponse(
     Guid Id,
     string AppUserId,
     string FirstName,
     string LastName,
     string Email,
-    string UserName,
     string JobTitle,
-    DateOnly HireDate,
     bool IsActive,
-    DateTime CreatedAt,
-    DateTime LastLoginAt,
-    string? Notes,
     Guid? DepartmentId,
     string? DepartmentName
     );

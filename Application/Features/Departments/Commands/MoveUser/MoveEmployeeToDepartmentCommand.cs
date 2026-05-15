@@ -9,7 +9,7 @@ internal sealed class MoveEmployeeToDepartmentCommandHandler(
 {
     public async Task<Result> HandleAsync(MoveEmployeeToDepartmentCommand command, CancellationToken ct = default)
     {
-        var result = await departmentDomainService.MoveUserAsync(command.UserId, command.ToDepartmentId, ct);
+        var result = await departmentDomainService.MoveEmployeeAsync(command.UserId, command.ToDepartmentId, ct);
 
         if (result.IsFailure)
             return result.Error;

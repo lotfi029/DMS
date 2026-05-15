@@ -34,7 +34,7 @@ public class DepartmentDomainService(
 
         return Result.Success(entity.Id);
     }
-    public async Task<Result> AddUserAsync(Guid employeeId, Guid departmentId, CancellationToken ct = default)
+    public async Task<Result> AddEmployeeAsync(Guid employeeId, Guid departmentId, CancellationToken ct = default)
     {
         if (!await employeeRepository.ExistsAsync(e => e.Id == employeeId, ct))
             return UserErrors.NotFound;
@@ -55,7 +55,7 @@ public class DepartmentDomainService(
 
         return Result.Success();
     }
-    public async Task<Result> MoveUserAsync(Guid employeeId, Guid newDepartmentId, CancellationToken ct = default)
+    public async Task<Result> MoveEmployeeAsync(Guid employeeId, Guid newDepartmentId, CancellationToken ct = default)
     {
         if (!await employeeRepository.ExistsAsync(e => e.Id == employeeId, ct))
             return UserErrors.NotFound;
@@ -76,7 +76,7 @@ public class DepartmentDomainService(
         
         return Result.Success();
     }
-    public async Task<Result> RemoveUserAsync(Guid employeeId, Guid departmentId, CancellationToken ct = default)
+    public async Task<Result> RemoveEmployeeAsync(Guid employeeId, Guid departmentId, CancellationToken ct = default)
     {
         if (!await employeeRepository.ExistsAsync(e => e.Id == employeeId && e.DepartmentId == departmentId, ct))
             return DepartmentErrors.UserNotInDepartment;

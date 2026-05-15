@@ -8,13 +8,16 @@ public enum AuditAction
     UserCreated = 100, UserUpdated, UserDeleted,
     UserActivated, UserDeactivated, UserViewed, UserListed,
 
-    RoleCreated = 200, RoleUpdated, RoleDeleted,
+    EmployeeCreated = 200, EmployeeUpdated, EmployeeDeleted,
+    EmployeeActivated, EmployeeDeactivated, EmployeeViewed, EmployeeListed,
+
+    RoleCreated = 300, RoleUpdated, RoleDeleted,
     RoleAssignedToUser, RoleRemovedFromUser,
     RoleViewed,
 
-    PermissionAssignedToRole = 300, PermissionRemovedFromRole, PermissionViewed,
+    PermissionAssignedToRole = 400, PermissionRemovedFromRole, PermissionViewed,
 
-    DepartmentCreated = 400, DepartmentUpdated, DepartmentDeleted,
+    DepartmentCreated = 500, DepartmentUpdated, DepartmentDeleted,
     DepartmentViewed, DepartmentListed, DepartmentUserViewed,
     UserAddedToDepartment, UserRemovedFromDepartment, UserMovedBetweenDepartments,
 

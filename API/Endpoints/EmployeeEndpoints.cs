@@ -1,4 +1,7 @@
 ﻿using Application.DTOs.Employees;
+using Application.Features.Employees.Commands.Create;
+using Application.Features.Employees.Queries.GetAll;
+using Application.Features.Employees.Queries.GetById;
 
 namespace API.Endpoints;
 
@@ -13,9 +16,10 @@ internal sealed class EmployeeEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
-        group.MapPost("create", CreateAsync)
+        group.MapPost("", CreateAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Employees.Create))
-            .Produces<Guid>(StatusCodes.Status201Created);
+            .Produces<Guid>(StatusCodes.Status201Created)
+            .WithName("CreateEmployee");
 
         group.MapPut("update", UpdateAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Employees.Update))
@@ -27,20 +31,42 @@ internal sealed class EmployeeEndpoints : IEndpoint
 
         group.MapGet("{id:guid}", GetByIdAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Employees.ViewDetails))
-            .Produces<EmployeeResponse>(StatusCodes.Status200OK);
+            .Produces<EmployeeListResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .WithName("GetEmployeeById");
 
-        group.MapGet("", GetAllAsync)
+        group.MapPost("get-all", GetAllAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Employees.Read))
-            .Produces<IEnumerable<EmployeeResponse>>(StatusCodes.Status200OK);
+            .Produces<IEnumerable<EmployeeListResponse>>(StatusCodes.Status200OK);
 
         group.MapGet("by-role/{roleName}", GetByRoleAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Employees.Read))
-            .Produces<IEnumerable<EmployeeResponse>>(StatusCodes.Status200OK);
+            .Produces<IEnumerable<EmployeeListResponse>>(StatusCodes.Status200OK);
     }
 
-    private Task<IResult> CreateAsync()
+    private async Task<IResult> CreateAsync(
+        [FromBody] CreateEmployeeRequest request,
+        [FromServices] IValidator<CreateEmployeeRequest> validator,
+        [FromServices] ICommandHandler<CreateEmployeeCommand, Guid> handler,
+        CancellationToken ct
+        )
     {
-        throw new NotImplementedException();
+        var command = new CreateEmployeeCommand(
+            request.FirstName,
+            request.LastName,
+            request.Email,
+            request.UserName,
+            request.Password,
+            request.JobTitle,
+            request.RoleId,
+            request.DepartmentId,
+            request.Notes);
+
+        var result = await handler.HandleAsync(command, ct);
+
+        return result.IsSuccess
+            ? Results.CreatedAtRoute("GetEmployeeById", new { id = result.Value }, result.Value)
+            : result.ToProblem();
     }
     private Task<IResult> UpdateAsync(Guid id)
     {
@@ -50,13 +76,47 @@ internal sealed class EmployeeEndpoints : IEndpoint
     {
         throw new NotImplementedException();
     }
-    private Task<IResult> GetByIdAsync(Guid id)
+    private async Task<IResult> GetByIdAsync(
+        [FromRoute] Guid id,
+        [FromServices] IQueryHandler<GetEmployeeByIdQuery, EmployeeResponse> handler,
+        CancellationToken ct
+        )
     {
-        throw new NotImplementedException();
+        if (id == Guid.Empty)
+            return Results.BadRequest("Invalid Id");
+
+        var query = new GetEmployeeByIdQuery(id);
+        var result = await handler.HandleAsync(query, ct);
+
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
+            : Results.Problem();
     }
-    private Task<IResult> GetAllAsync()
+    private async Task<IResult> GetAllAsync(
+        [FromBody] EmployeeQueryRequest queryRequest,
+        [FromServices] IQueryHandler<GetAllEmployeeQuery, IEnumerable<EmployeeListResponse>> handler,
+        CancellationToken ct
+        )
     {
-        throw new NotImplementedException();
+        var query = new GetAllEmployeeQuery(
+            JobTitle: queryRequest.JobTitle,
+            Role: queryRequest.Role,
+            DepartmentId: queryRequest.DepartmentId,
+            IsActive: queryRequest.IsActive,
+            HireDateMin: queryRequest.HireDateMin,
+            HireDateMax: queryRequest.HireDateMax,
+            LastLoginDateMin: queryRequest.LastLoginDateMin,
+            LastLoginDateMax: queryRequest.LastLoginDateMax,
+            CreatedAtMin: queryRequest.CreatedAtMin,
+            CreatedAtMax: queryRequest.CreatedAtMax,
+            UserType: queryRequest.UserType);
+
+        var result = await handler.HandleAsync(query, ct);
+
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
+            : Results.Problem();
+
     }
     private Task<IResult> GetByRoleAsync(string roleName)
     {

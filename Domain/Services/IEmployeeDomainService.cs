@@ -2,87 +2,10 @@
 
 public interface IEmployeeDomainService
 {
+    Task<Result> ActivateAsync(Guid id, CancellationToken ct = default);
+    Result<Guid> Create(string userId, string jobTitle, Guid departmentId, string? notes = null);
+    Task<Result> DeactivateAsync(Guid id, CancellationToken ct = default);
+    Task<Result<IEnumerable<Employee>>> GetAllAsync(CancellationToken ct = default);
+    Task<Result<Employee>> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<Result> UpdateAsync(Guid id, string? firstName, string? lastName, string? jobTitle = null, string? notes = null, CancellationToken ct = default);
 }
-
-internal sealed class EmployeeDomainService(
-    IEmployeeRepository employeeRepository,
-    IUserRepository userRepository) : IEmployeeDomainService
-{
-    public Result<Guid> Create(
-        string userId,
-        string jobTitle,
-        DateOnly HireDate,
-        Guid departmentId,
-        string? notes = null
-        )
-    {
-        var employee = Employee.Create(
-            jobTitle: jobTitle,
-            appUserId: userId,
-            hireDate: HireDate,
-            departmentId: departmentId,
-            notes: notes
-        );
-
-        employeeRepository.Add(employee);
-
-        return employee.Id;
-    }
-
-    public async Task<Result> UpdateAsync(
-        Guid id,
-        string? firstName,
-        string? lastName,
-        string? jobTitle = null,
-        string? notes = null,
-        CancellationToken ct = default)
-    {
-        if (await employeeRepository.GetByIdAsync(e => e.Id == id, ct: ct) is not { } employee)
-            return EmployeeErrors.NotFound;
-
-        await employeeRepository.ExecuteUpdateAsync(
-            x => x.Id == id,
-            setter => setter
-                .SetProperty(e => e.JobTitle, jobTitle ?? employee.JobTitle)
-                .SetProperty(e => e.Notes, notes ?? employee.Notes),
-            ct: ct
-            );
-
-
-        await userRepository.ExecuteUpdateAsync(
-            x => x.Id == employee.AppUserId,
-            setter => setter
-                .SetProperty(u => u.FirstName, uu => firstName ?? uu.FirstName)
-                .SetProperty(u => u.LastName, uu => lastName ?? uu.LastName),
-            ct: ct
-            );
-
-        return Result.Success();
-    }
-
-    public async Task<Result> DeactivateAsync(Guid id, CancellationToken ct = default)
-    {
-        if (await employeeRepository.GetByIdAsync(e => e.Id == id, ct: ct) is not { } employee)
-            return EmployeeErrors.NotFound;
-
-        if (!employee.IsActive)
-            return EmployeeErrors.AlreadyInactive;
-
-        await employeeRepository.ExecuteUpdateAsync(
-            x => x.Id == id,
-            setter => setter.SetProperty(e => e.IsActive, false),
-            ct: ct
-            );
-
-        await userRepository.ExecuteUpdateAsync(
-            x => x.Id == employee.AppUserId,
-            setter => setter.SetProperty(u => u.IsActive, false),
-            ct: ct
-            );
-
-        return Result.Success();
-    }
-
-
-}
-

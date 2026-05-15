@@ -4,6 +4,7 @@ public static class AuditEntityNames
 {
     // ── HRMS Entities ─────────────────────────────────────────────────────────
     public const string User = nameof(ApplicationUser);
+    public const string Employee = nameof(Employee);
     public const string Role = nameof(ApplicationRole);
     public const string RoleClaim = nameof(ApplicationRoleClaim);
     public const string Department = nameof(Department);

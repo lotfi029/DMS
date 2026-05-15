@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Persistence.Interceptors;
+using Infrastructure.Persistence.Repositories;
 using Infrastructure.Services.Authentication.Filters;
 using Microsoft.AspNetCore.Authorization;
 
@@ -17,9 +18,9 @@ public static class DependancyInjection
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.UseNpgsql(connectionString);
-            options.AddInterceptors(sp.GetRequiredService<AuditSaveChangeInterceptor>());
+            //options.AddInterceptors(sp.GetRequiredService<AuditSaveChangeInterceptor>());
         });
-        services.AddScoped<AuditSaveChangeInterceptor>();
+        //services.AddScoped<AuditSaveChangeInterceptor>();
 
         services.RegisterSeeders();
 
@@ -84,6 +85,8 @@ public static class DependancyInjection
     {
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;

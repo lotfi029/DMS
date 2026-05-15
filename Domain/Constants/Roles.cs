@@ -38,7 +38,34 @@ public static class DefaultRoles
         IsActive = true,
         CreatedAt = DateTime.UtcNow
     };
+    public static readonly ApplicationRole Client = new()
+    {
+        Id = "d9c8a1e5-7b3c-4f0e-9a1b-2f5e6c8d9a3b",
+        Name = "Client",
+        NormalizedName = "CLIENT",
+        Description = "System role: client",
+        IsActive = true,
+        CreatedAt = DateTime.UtcNow
+    };
+    public static readonly ApplicationRole Vendor = new()
+    {
+        Id = "a3b2c1d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+        Name = "Vendor",
+        NormalizedName = "VENDOR",
+        Description = "System role: vendor",
+        IsActive = true,
+        CreatedAt = DateTime.UtcNow
+    };
+    public static readonly ApplicationRole Contractor = new()
+    {
+        Id = "f1e2d3c4-5b6a-7c8d-9e0f-1a2b3c4d5e6f",
+        Name = "Contractor",
+        NormalizedName = "CONTRACTOR",
+        Description = "System role: contractor",
+        IsActive = true,
+        CreatedAt = DateTime.UtcNow
+    };
 
     public static readonly IList<ApplicationRole> All = 
-        [ Admin, DepartmentHead, Employee, Manager];
+        [ Admin, DepartmentHead, Employee, Manager, Client, Vendor, Contractor];
 }

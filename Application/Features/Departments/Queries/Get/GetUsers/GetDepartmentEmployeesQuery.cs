@@ -2,20 +2,20 @@
 
 namespace Application.Features.Departments.Queries.Get.GetUsers;
 
-public sealed record GetDepartmentEmployeesQuery(Guid DepartmentId) : IQuery<List<EmployeeResponse>>;
+public sealed record GetDepartmentEmployeesQuery(Guid DepartmentId) : IQuery<List<EmployeeListResponse>>;
 
 internal sealed class GetDepartmentEmployeesQueryHandler(
     IDepartmentDomainService departmentDomainService,
-    IAuditService auditService) : IQueryHandler<GetDepartmentEmployeesQuery, List<EmployeeResponse>>
+    IAuditService auditService) : IQueryHandler<GetDepartmentEmployeesQuery, List<EmployeeListResponse>>
 {
-    public async Task<Result<List<EmployeeResponse>>> HandleAsync(GetDepartmentEmployeesQuery query, CancellationToken ct = default)
+    public async Task<Result<List<EmployeeListResponse>>> HandleAsync(GetDepartmentEmployeesQuery query, CancellationToken ct = default)
     {
         var result = await departmentDomainService.GetUsersAsync(u => u.DepartmentId == query.DepartmentId, ct);
 
         if (result.IsFailure)
             return result.Error;
 
-        var response = result.Value!.Select(e => new EmployeeResponse(
+        var response = result.Value!.Select(e => new EmployeeListResponse(
             e.Id,
             e.AppUser.Id,
             e.AppUser.FirstName,

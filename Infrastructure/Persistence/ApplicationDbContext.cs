@@ -12,7 +12,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         IdentityUserToken<string>>(options)
 {
     public DbSet<Department> Departments { get; set; }
+    public DbSet<Employee> Employees { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("dms");

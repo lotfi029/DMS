@@ -1,4 +1,6 @@
-﻿namespace Application;
+﻿using Application.Mapping;
+
+namespace Application;
 
 public static class DependancyInjection
 {
@@ -10,7 +12,7 @@ public static class DependancyInjection
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
         var config = TypeAdapterConfig.GlobalSettings;
-        config.Scan(typeof(DependancyInjection).Assembly);
+        config.Scan(typeof(UserMappingConfig).Assembly);
         services.AddSingleton<IMapper>(new Mapper(config));
 
         services.AddValidatorsFromAssemblyContaining<AddUserRequest>(includeInternalTypes: true);
@@ -30,6 +32,9 @@ public static class DependancyInjection
                 .AsImplementedInterfaces()
                 .WithScopedLifetime()
         );
+
+        services.Decorate(typeof(ICommandHandler<>), typeof(ValidationDecorator.CommandHandler<>));
+        services.Decorate(typeof(ICommandHandler<,>), typeof(ValidationDecorator.CommandHandler<,>));
 
         services.Decorate(typeof(ICommandHandler<>), typeof(LoggingDecorator.CommandHandler<>));
         services.Decorate(typeof(ICommandHandler<,>), typeof(LoggingDecorator.CommandHandler<,>));

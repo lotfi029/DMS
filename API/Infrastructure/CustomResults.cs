@@ -14,12 +14,29 @@ public static class CustomResults
         problemDetails!.Extensions = new Dictionary<string, object?>()
         {
             {
-                "errors", new Dictionary<string, IList<string>>
-                {
-                    { result.Error.Code, [result.Error.Description] }
-                }
+                "errors", GetErrors(result)
             }
         };
+        static Dictionary<string, List<string>> GetErrors(Result result)
+        {
+            if (result.Error is ValidationError validationError)
+            {
+                var r = new Dictionary<string, List<string>>();
+                foreach(var error in validationError.Errors)
+                {
+                    if (r.TryGetValue(error.Code, out var values))
+                        values.Add(error.Description);
+                    else
+                        r.Add(error.Code, [error.Description]);
+
+                }
+                return r;
+            }
+            return new()
+            {
+                { result.Error.Code, [result.Error.Description] }
+            };
+        }
         return TypedResults.Problem(problemDetails);
     }
 }

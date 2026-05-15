@@ -14,7 +14,7 @@ internal sealed class AuthService(
 {
     private readonly int _refreshTokenExpiryDays = 14;
     private readonly AuditContext _currentContext = auditContextAccessor.GetCurrent();
-    public async Task<Result<string>> RegisterAsync(string roleId, RegisterRequest request, CancellationToken ct = default)
+    public async Task<Result<string>> RegisterAsync(string roleId, UserType userType, RegisterRequest request, CancellationToken ct = default)
     {
         if (await userManager.Users.AnyAsync(e => e.Email == request.Email, ct))
             return AuthErrors.DuplicatedEmail(request.Email);
@@ -30,6 +30,7 @@ internal sealed class AuthService(
         var user = ApplicationUser.Create(
             id: Guid.CreateVersion7().ToString(),
             userName: request.UserName,
+            userType: userType,
             email: request.Email,
             firstName: request.FirstName,
             lastName: request.LastName

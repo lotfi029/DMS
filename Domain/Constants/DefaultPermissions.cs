@@ -18,6 +18,15 @@ public static class DefaultPermissions
         public static IList<string> All =>
             typeof(Users).GetFields().Select(f => f.GetValue(f) as string).ToList()!;
     }
+    public static class Authentication
+    {
+        public static string GroupName => nameof(Authentication);
+        public const string Login = "authentication.login";
+        public const string Logout = "authentication.logout";
+        public const string RefreshToken = "authentication.refresh_token";
+        public static IList<string> All =>
+            typeof(Authentication).GetFields().Select(f => f.GetValue(f) as string).ToList()!;
+    }
     public static class Employees
     {
         public static string GroupName => nameof(Employees);

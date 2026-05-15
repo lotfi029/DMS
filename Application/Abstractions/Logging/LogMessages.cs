@@ -71,7 +71,7 @@ public static class LogMessages
     public const string Dept_UserRemoved = "User {UserId} removed from department {DepartmentId}";
     public const string Dept_UserMoved = "User {UserId} moved to department {DepartmentId}";
 
-    // ── MOMS Projects ─────────────────────────────────────────────────────────
+    // ── Projects ─────────────────────────────────────────────────────────
     public const string Project_Created = "Project {ProjectCode} created for client {ClientName}";
     public const string Project_Updated = "Project {ProjectId} updated";
     public const string Project_StageAdvanced = "Project {ProjectId} advanced to stage {Stage}";
@@ -81,6 +81,7 @@ public static class LogMessages
     // ── Infrastructure ────────────────────────────────────────────────────────
     public const string DB_MigrationApplied = "Database migrations applied successfully";
     public const string DB_SeedStarted = "Database seeding started for {SeederName}";
+    public const string DB_SeedUpdated = "Database seeding updated for {SeederName}";
     public const string DB_SeedCompleted = "Database seeding completed for {SeederName}";
     public const string DB_SeedSkipped = "{EntityName} '{EntityValue}' already exists — skipping seed";
 

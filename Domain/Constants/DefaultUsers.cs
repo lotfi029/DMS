@@ -10,6 +10,7 @@ public static class DefaultUsers
         email: "manager@system.dms",
         firstName: "Default",
         lastName: "Manager",
+        userType: UserType.Employee,
         passwordHashed: "AQAAAAIAAYagAAAAEO+viSpwZfDcerDVZKFkj8KyR/DTccUyEY4rkX2+ju0KwGZiT6acd1W7clgf9WSjfw=="
         );
 

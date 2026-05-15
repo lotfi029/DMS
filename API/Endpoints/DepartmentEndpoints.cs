@@ -1,4 +1,5 @@
 using Application.DTOs.Departments;
+using Application.DTOs.Employees;
 using Application.DTOs.Users;
 using Application.Features.Departments.Commands.AddUser;
 using Application.Features.Departments.Commands.Create;
@@ -180,7 +181,7 @@ internal sealed class DepartmentEndpoints : IEndpoint
     }
     private async Task<IResult> GetUserAsync(
         [FromRoute] Guid id,
-        [FromServices] IQueryHandler<GetDepartmentEmployeesQuery, List<UserListResponse>> handler,
+        [FromServices] IQueryHandler<GetDepartmentEmployeesQuery, List<EmployeeListResponse>> handler,
         CancellationToken ct)
     {
         var query = new GetDepartmentEmployeesQuery(id);

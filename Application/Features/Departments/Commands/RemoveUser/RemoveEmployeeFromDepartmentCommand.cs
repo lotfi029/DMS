@@ -9,7 +9,7 @@ internal sealed class RemoveEmployeeFromDepartmentCommandHandler(
 {
     public async Task<Result> HandleAsync(RemoveEmployeeFromDepartmentCommand command, CancellationToken ct = default)
     {
-        var result = await departmentDomainService.RemoveUserAsync(command.EmployeeId, command.DepartmentId, ct);
+        var result = await departmentDomainService.RemoveEmployeeAsync(command.EmployeeId, command.DepartmentId, ct);
 
         if (result.IsFailure)
             return result.Error;

@@ -73,11 +73,3 @@ public class ApplicationUser : IdentityUser, IAuditable
         LastLoginAt = DateTime.UtcNow;
     }
 }
-
-public enum UserType
-{
-    Employee,
-    Client,
-    Vendor,
-    EmployeeSite
-}

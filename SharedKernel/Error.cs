@@ -2,7 +2,7 @@
 
 public record Error
 {
-    private Error(string Code, string Description, int? Status)
+    public Error(string Code, string Description, int? Status)
     {
         this.Code = Code;
         this.Description = Description;
@@ -37,4 +37,20 @@ public record Error
         => new("Error.Unexpected", Description, 500);
     public override string ToString()
         => $"The Code Is: {Code}, With Message: {Description}, and the status code is: {Status}";
+}
+public sealed record ValidationError : Error
+{
+    public ValidationError(Error[] errors)
+        : base(
+            "Validation.General",
+            "One or more validation errors occurred",
+            400)
+    {
+        Errors = errors;
+    }
+
+    public Error[] Errors { get; }
+
+    public static ValidationError FromResults(IEnumerable<Result> results) =>
+        new(results.Where(r => r.IsFailure).Select(r => r.Error).ToArray());
 }

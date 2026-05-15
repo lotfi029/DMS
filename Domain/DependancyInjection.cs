@@ -10,6 +10,7 @@ public static class DependancyInjection
     private static void RegisterDomainServices(this IServiceCollection services)
     {
         services.AddScoped<IDepartmentDomainService, DepartmentDomainService>();
+        services.AddScoped<IEmployeeDomainService, EmployeeDomainService>();
         services.AddScoped<IUserDomainService, UserDomainService>();
     }
 }
