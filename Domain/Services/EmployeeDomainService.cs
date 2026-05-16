@@ -98,17 +98,5 @@ internal sealed class EmployeeDomainService(
             );
         return Result.Success();
     }
-    public async Task<Result<Employee>> GetByIdAsync(Guid id, CancellationToken ct = default)
-    {
-        if (await employeeRepository.GetByIdAsync(e => e.Id == id, [nameof(Employee.AppUser), nameof(Employee.Department)], ct: ct) is not { } employee)
-            return EmployeeErrors.NotFound;
-        return Result.Success(employee);
-    }
-
-    public async Task<Result<IEnumerable<Employee>>> GetAllAsync(CancellationToken ct = default)
-    {
-        var employees = await employeeRepository.GetAllAsync(ct);
-        return Result.Success(employees);
-    }
 }
 

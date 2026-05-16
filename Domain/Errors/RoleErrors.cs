@@ -18,4 +18,9 @@ public static class RoleErrors
         => Error.NotFound(
             $"{_code}.{nameof(NotFound)}",
             $"Role was not found.");
+
+    public static Error UserNotInRole
+        => Error.BadRequest(
+            $"{_code}.{nameof(UserNotInRole)}",
+            $"User is not in the specified role.");
 }

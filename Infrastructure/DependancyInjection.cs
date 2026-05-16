@@ -87,8 +87,10 @@ public static class DependancyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<IUserPermissionOverrideRepository,
                    UserPermissionOverrideRepository>();
+        services.AddScoped<IEmployeeDepartmentRepository, EmployeeDepartmentRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

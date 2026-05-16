@@ -55,6 +55,20 @@ internal sealed class RoleService(
         var result = await userManager.RemoveFromRoleAsync(user, role.Name!);
         return result.Succeeded ? Result.Success() : Error.BadRequest("Role.RemoveFromUser", string.Join(", ", result.Errors.Select(e => e.Description)));
     }
+    public async Task<Result> UserInRoleAsync(string userId, string roleId, CancellationToken ct = default)
+    {
+        var user = await dbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, ct);
+
+        if (user is null)
+            return UserErrors.NotFound;
+
+        var inRole = await userManager.IsInRoleAsync(user, roleId);
+        return inRole 
+            ? Result.Success() 
+            : RoleErrors.UserNotInRole;
+    }
 
     public async Task<Result<IEnumerable<RoleResponse>>> GetUserRolesAsync(string userId, CancellationToken ct = default)
     {

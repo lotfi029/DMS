@@ -10,4 +10,6 @@ public interface IGenericRepository<T> where T : class
     Task<int> ExecuteDeleteAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default);
     Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default);
     Task<int> ExecuteUpdateAsync(Expression<Func<T, bool>> predicate, Action<UpdateSettersBuilder<T>> setPropertyCalls, CancellationToken ct = default);
+    Task<T?> GetByIdAsync(object id, CancellationToken ct = default);
 }
+public interface IEmployeeDepartmentRepository : IGenericRepository<EmployeeDepartment>;

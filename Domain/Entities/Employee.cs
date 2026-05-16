@@ -9,9 +9,9 @@ public sealed class Employee : Entity, IAuditable
 
     public string AppUserId { get; set; } = string.Empty;
     public ApplicationUser AppUser { get; set; } = default!;
-    public Guid? DepartmentId { get; set; }
-    public Department? Department { get; set; }
-    
+    //public Guid? DepartmentId { get; set; }
+    //public Department? Department { get; set; }
+    public ICollection<EmployeeDepartment> EmployeeDepartments { get; set; } = [];
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime LastModifiedAt { get; set; } = DateTime.UtcNow;
 
@@ -21,14 +21,12 @@ public sealed class Employee : Entity, IAuditable
         string jobTitle,
         string appUserId,
         DateOnly hireDate,
-        string? notes = null,
-        Guid? departmentId = null)
+        string? notes = null)
     {
         JobTitle = jobTitle;
         HireDate = hireDate;
         Notes = notes;
         AppUserId = appUserId;
-        DepartmentId = departmentId;
         IsActive = true;
     }
 
@@ -43,7 +41,6 @@ public sealed class Employee : Entity, IAuditable
             jobTitle: jobTitle,
             appUserId: appUserId,
             hireDate: hireDate,
-            notes: notes,
-            departmentId: departmentId);
+            notes: notes);
     }
 }

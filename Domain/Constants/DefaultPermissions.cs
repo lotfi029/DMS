@@ -41,6 +41,20 @@ public static class DefaultPermissions
         public static IList<string> All =>
             typeof(Employees).GetFields().Select(f => f.GetValue(f) as string).ToList()!;
     }
+    public static class Clients
+    {
+        public static string GroupName => nameof(Clients);
+
+        public const string Read = "clients.read";
+        public const string ViewDetails = "clients.view_details";
+        public const string Update = "clients.update";
+        public const string Create = "clients.create";
+        public const string Deactivate = "clients.deactivate";
+        public const string Delete = "clients.delete";
+
+        public static IList<string> All =>
+            typeof(Clients).GetFields().Select(f => f.GetValue(f) as string).ToList()!;
+    }
     public static class Roles
     {
         public static string GroupName => nameof(Roles);
@@ -63,6 +77,7 @@ public static class DefaultPermissions
         public const string Create = "departments.create";
         public const string Deactivate = "departments.deactivate";
         public const string Delete = "departments.delete";
+        public const string AssignDepartmentHead = "departments.assign_department_head";
         public const string AssignToUser = "departments.assign_to_user";
         public const string RemoveFromUser = "departments.remove_from_user";
         public const string MoveUser = "departments.move_user";
@@ -97,5 +112,6 @@ public static class DefaultPermissions
         .. Departments.All,
         .. Permissions.All,
         .. Audit.All,
-        .. Employees.All];
+        .. Employees.All,
+        .. Clients.All];
 }

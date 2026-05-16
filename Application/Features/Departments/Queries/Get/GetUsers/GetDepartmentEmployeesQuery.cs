@@ -5,25 +5,28 @@ namespace Application.Features.Departments.Queries.Get.GetUsers;
 public sealed record GetDepartmentEmployeesQuery(Guid DepartmentId) : IQuery<List<EmployeeListResponse>>;
 
 internal sealed class GetDepartmentEmployeesQueryHandler(
-    IDepartmentDomainService departmentDomainService,
+    IEmployeeDepartmentRepository employeeDepartmentRepository,
     IAuditService auditService) : IQueryHandler<GetDepartmentEmployeesQuery, List<EmployeeListResponse>>
 {
     public async Task<Result<List<EmployeeListResponse>>> HandleAsync(GetDepartmentEmployeesQuery query, CancellationToken ct = default)
     {
-        var result = await departmentDomainService.GetUsersAsync(u => u.DepartmentId == query.DepartmentId, ct);
+        var result = await employeeDepartmentRepository.GetAllAsync(
+            predicate: ed => ed.DepartmentId == query.DepartmentId,
+            [nameof(EmployeeDepartment.Employee)],
+            ct);
 
-        if (result.IsFailure)
-            return result.Error;
+        if (result is null || result.Any())
+            return Result.Success((List<EmployeeListResponse>)[]);
 
-        var response = result.Value!.Select(e => new EmployeeListResponse(
-            e.Id,
-            e.AppUser.Id,
-            e.AppUser.FirstName,
-            e.AppUser.LastName,
-            e.AppUser.Email!,
-            e.JobTitle,
-            e.IsActive,
-            e.DepartmentId ?? null,
+        var response = result.Select(e => new EmployeeListResponse(
+            e.Employee.Id,
+            e.Employee.AppUser.Id,
+            e.Employee.AppUser.FirstName,
+            e.Employee.AppUser.LastName,
+            e.Employee.AppUser.Email!,
+            e.Employee.JobTitle,
+            e.Employee.IsActive,
+            e.DepartmentId,
             e.Department!.Name ?? null
             ))
             .ToList();

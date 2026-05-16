@@ -15,6 +15,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Employee> Employees { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
     public DbSet<UserPermissionOverride> UserPermissionsOverride { get; set; }
+    public DbSet<EmployeeDepartment> EmployeeDepartments { get; set; }
+    public DbSet<Client> Clients { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

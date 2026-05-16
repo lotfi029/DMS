@@ -3,18 +3,19 @@ namespace Application.Features.Departments.Queries.GetAll;
 public sealed record GetAllDepartmentsQuery : IQuery<IEnumerable<DepartmentResponse>>;
 
 public sealed class GetAllDepartmentsQueryHandler(
-    IDepartmentDomainService domainService,
+    IDepartmentRepository repo,
     IAuditService auditService
     ) : IQueryHandler<GetAllDepartmentsQuery, IEnumerable<DepartmentResponse>>
 {
     public async Task<Result<IEnumerable<DepartmentResponse>>> HandleAsync(GetAllDepartmentsQuery query, CancellationToken ct = default)
     {
-        var entities = await domainService.GetAllAsync(ct);
+        var entities = await repo.GetAllAsync(ct);
 
-        if (entities.IsFailure)
-            return entities.Error;
+        if (entities is null || entities.Any())
+            return Result.Success(Enumerable.Empty<DepartmentResponse>());
 
-        var responses = entities.Value!.Adapt<IEnumerable<DepartmentResponse>>();
+
+        var responses = entities.Adapt<IEnumerable<DepartmentResponse>>();
 
         await auditService.LogActionAsync(
             action: AuditAction.DepartmentListed,

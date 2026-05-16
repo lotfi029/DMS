@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Employees;
+﻿using Application.DTOs.Clients;
+using Application.DTOs.Employees;
 
 namespace Application.Mapping;
 
@@ -25,7 +26,14 @@ internal sealed class UserMappingConfig : IRegister
             .Map(dest => dest.FirstName, src => src.AppUser.FirstName)
             .Map(dest => dest.LastName, src => src.AppUser.LastName)
             .Map(dest => dest.Email, src => src.AppUser.Email)
-            .Map(dest => dest.IsActive, src => src.AppUser.IsActive)
-            .Map(dest => dest.DepartmentName, src => src.Department!.Name ?? string.Empty);
+            .Map(dest => dest.IsActive, src => src.AppUser.IsActive);
+
+        config.NewConfig<Client, ClientResponse>()
+            .Map(dest => dest.FirstName, src => src.AppUser.FirstName)
+            .Map(dest => dest.LastName, src => src.AppUser.LastName)
+            .Map(dest => dest.Email, src => src.AppUser.Email)
+            .Map(dest => dest.UserName, src => src.AppUser.UserName) 
+            .Map(dest => dest.IsActive, src => src.AppUser.IsActive);
+
     }
 }

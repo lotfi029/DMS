@@ -2,6 +2,7 @@ using Application.DTOs.Departments;
 using Application.DTOs.Employees;
 using Application.DTOs.Users;
 using Application.Features.Departments.Commands.AddUser;
+using Application.Features.Departments.Commands.AssignHead;
 using Application.Features.Departments.Commands.Create;
 using Application.Features.Departments.Commands.Delete;
 using Application.Features.Departments.Commands.MoveUser;
@@ -36,6 +37,10 @@ internal sealed class DepartmentEndpoints : IEndpoint
             .Produces(StatusCodes.Status204NoContent);
         group.MapPut("/{id:guid}/move-user", MoveUserAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Departments.MoveUser))
+            .Produces(StatusCodes.Status204NoContent);
+
+        group.MapPut("/{id:guid}/assign-head", AssignHeadAsync)
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Departments.AssignDepartmentHead))
             .Produces(StatusCodes.Status204NoContent);
 
 
@@ -125,6 +130,19 @@ internal sealed class DepartmentEndpoints : IEndpoint
         
         return result.IsSuccess 
             ? Results.NoContent() 
+            : result.ToProblem();
+    }
+    private async Task<IResult> AssignHeadAsync(
+        [FromRoute] Guid id,
+        [FromBody] DepartmentUserRequest request,
+        [FromServices] ICommandHandler<AssignDepartmentHeadCommand> handler,
+        CancellationToken ct)
+    {
+        var command = new AssignDepartmentHeadCommand(request.UserId, id);
+        var result = await handler.HandleAsync(command, ct);
+
+        return result.IsSuccess
+            ? Results.NoContent()
             : result.ToProblem();
     }
     private async Task<IResult> UpdateAsync(

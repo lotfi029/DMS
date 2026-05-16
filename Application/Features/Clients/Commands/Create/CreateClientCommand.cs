@@ -10,12 +10,12 @@ public sealed record CreateClientCommand(
     string Address,
     string? Notes = null
 ) : ICommand<Guid>;
+
 internal sealed class CreateClientCommandHandler(
     IUnitOfWork unitOfWork,
     IAuditService auditService,
     IAuthService authService,
-    IClientRepository clientRepository,
-    ILogger<CreateClientCommandHandler> logger
+    IClientRepository clientRepository
     ) : ICommandHandler<CreateClientCommand, Guid>
 {
     public async Task<Result<Guid>> HandleAsync(CreateClientCommand command, CancellationToken ct = default)

@@ -22,3 +22,4 @@ internal class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .HasDatabaseName("IX_departments_Name");
     }
 }
+

@@ -5,7 +5,10 @@ namespace Infrastructure.Persistence.Repositories;
 public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepository<T> where T : class
 {
     protected readonly ApplicationDbContext DbContext = dbContext;
-
+    public async Task<T?> GetByIdAsync(object id, CancellationToken ct = default)
+    {
+        return await DbContext.Set<T>().FindAsync([id], ct);
+    }
     public async Task<T?> GetByIdAsync(Expression<Func<T, bool>> predicate, string[]? include = null, CancellationToken ct = default)
     {
         var query = DbContext.Set<T>().AsQueryable();

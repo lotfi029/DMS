@@ -3,24 +3,24 @@ namespace Application.Features.Departments.Queries.Get;
 public sealed record GetDepartmentByIdQuery(Guid Id) : IQuery<DepartmentResponse>;
 
 public sealed class GetDepartmentByIdQueryHandler(
-    IDepartmentDomainService domainService,
+    IDepartmentRepository repo,
     IAuditService auditService
     ) : IQueryHandler<GetDepartmentByIdQuery, DepartmentResponse>
 {
     public async Task<Result<DepartmentResponse>> HandleAsync(GetDepartmentByIdQuery query, CancellationToken ct = default)
     {
-        var entity = await domainService.GetByIdAsync(query.Id, ct);
+        var entity = await repo.GetByIdAsync(query.Id, ct);
 
-        if (entity.IsFailure)
-            return entity.Error;
+        if (entity is null)
+            return DepartmentErrors.NotFound;
 
-        var reponse = entity.Value!.Adapt<DepartmentResponse>();
+        var reponse = entity.Adapt<DepartmentResponse>();
 
         await auditService.LogActionAsync(
             action: AuditAction.DepartmentViewed,
             module: AuditModules.Departments,
             entityName: AuditEntityNames.Department,
-            entityId: entity.Value!.Id.ToString(),
+            entityId: entity.Id.ToString(),
             ct: ct);
 
         return reponse;
