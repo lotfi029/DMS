@@ -9,6 +9,8 @@ public sealed record CreateEmployeeCommand(
     string JobTitle,
     string? RoleId,
     Guid? DepartmentId,
+    IEnumerable<string> GrantPermissions,
+    IEnumerable<string> DenyPermissions,
     string? Notes) : ICommand<Guid>;
 
 internal sealed class CreateEmployeeCommandHandler(
@@ -17,26 +19,29 @@ internal sealed class CreateEmployeeCommandHandler(
     IAuthService authService,
     IAuditService auditService,
     IDepartmentRepository departmentRepository,
+    IUserPermissionOverrideRepository userPermission,
     ILogger<CreateEmployeeCommandHandler> logger) : ICommandHandler<CreateEmployeeCommand, Guid>
 {
     public async Task<Result<Guid>> HandleAsync(CreateEmployeeCommand command, CancellationToken ct = default)
     {
+        if (!await departmentRepository.ExistsAsync(x => x.Id == command.DepartmentId, ct))
+            return DepartmentErrors.NotFound;
+
         var transaction = await unitOfWork.BeginTransactionAsync(ct);
         try
         {
-            if (!await departmentRepository.ExistsAsync(x => x.Id == command.DepartmentId, ct))
-                return DepartmentErrors.NotFound;
-
             var registerRequest = new RegisterRequest(
-                command.FirstName,
-                command.LastName,
-                command.Password,
-                command.Email,
-                command.UserName);
+                command.FirstName, command.LastName,
+                command.Password, command.Email, command.UserName);
 
-            var registerResult = await authService.RegisterAsync(command.RoleId!, UserType.Employee, registerRequest, ct);
+            var registerResult = await authService.RegisterAsync(
+                command.RoleId!, UserType.Employee, registerRequest, ct);
+
             if (registerResult.IsFailure)
+            {
+                await transaction.RollbackAsync(ct);
                 return registerResult.Error;
+            }
 
             var employeeResult = employeeService.Create(
                 userId: registerResult.Value!,
@@ -46,9 +51,26 @@ internal sealed class CreateEmployeeCommandHandler(
                 );
 
             if (employeeResult.IsFailure)
+            {
+                await transaction.RollbackAsync(ct);
                 return employeeResult.Error;
+            }
 
             await unitOfWork.SaveChangesAsync(ct);
+
+            if (command.GrantPermissions.Any() || command.DenyPermissions.Any())
+            {
+                var permissionResult = await AddPermissions(
+                    command.GrantPermissions,
+                    command.DenyPermissions,
+                    registerResult.Value!,
+                    ct);
+                if (permissionResult.IsFailure)
+                {
+                    await transaction.RollbackAsync(ct);
+                    return permissionResult.Error;
+                }
+            }
 
             await auditService.LogActionAsync(
                 AuditAction.EmployeeCreated,
@@ -59,14 +81,49 @@ internal sealed class CreateEmployeeCommandHandler(
                 ct: ct);
 
             await transaction.CommitAsync(ct);
+
+            logger.LogInformation(
+                "Employee created: userId={UserId}, department={DeptId}, role={RoleId}",
+                registerResult.Value!, command.DepartmentId, command.RoleId ?? "Employee (default)");
+
             return employeeResult;
         }
-        catch 
+        catch
         {
             await transaction.RollbackAsync(ct);
             throw;
         }
     }
+    private async Task<Result> AddPermissions(
+        IEnumerable<string> grantPermissions,
+        IEnumerable<string> denyPermission,
+        string userId, CancellationToken ct)
+    {
+
+        foreach(var permission in grantPermissions)
+        {
+            if (!DefaultPermissions.AllDefaultPermissions.Contains(permission))
+                continue;
+
+            var grant = UserPermissionOverride.Grant(
+                userId,
+                permission,
+                "system");
+
+            userPermission.Add(grant);
+        }
+        foreach (var permission in denyPermission)
+        {
+            var deny = UserPermissionOverride.Deny(
+                userId,
+                permission,
+                "system");
+
+            userPermission.Add(deny);
+        }
+
+        await unitOfWork.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
 }
-// first register user (role, user metadata).
-// second create employee with the registered user id and other employee-specific data (department, job title, notes).

@@ -5,7 +5,6 @@ namespace Infrastructure.Services;
 internal sealed class AuthService(
     UserManager<ApplicationUser> userManager,
     RoleManager<ApplicationRole> roleManager,
-    ApplicationDbContext dbContext,
     IJwtProvider jwtProvider,
     IAuditService auditService,
     IAuditContextAccessor auditContextAccessor,
@@ -70,8 +69,8 @@ internal sealed class AuthService(
 
         userRefreshToken.RevokeOn = DateTime.UtcNow;
 
-        var (roles, permission) = await GetUserRoleAndClaims(user, ct);
-        var (newToken, expiresIn) = jwtProvider.GenerateToken(user, roles, permission);
+        var roles = await userManager.GetRolesAsync(user);
+        var (newToken, expiresIn) = await jwtProvider.GenerateToken(user, roles);
 
         var newRefreshToken = GenerateRefreshToken();
         var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
@@ -119,8 +118,8 @@ internal sealed class AuthService(
             return Error.Unauthorized("Auth.Login", "Invalid Credintionals");
         }
 
-        var (roles, permissions) = await GetUserRoleAndClaims(user, ct);
-        var (token, expireMinutes) = jwtProvider.GenerateToken(user, roles, permissions);
+        var roles = await userManager.GetRolesAsync(user);
+        var (token, expireMinutes) = await jwtProvider.GenerateToken(user, roles);
 
         var refreshToken = GenerateRefreshToken();
         var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
@@ -176,20 +175,5 @@ internal sealed class AuthService(
     private static string GenerateRefreshToken()
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-    }
-    private async Task<(IEnumerable<string> roles, IEnumerable<string> permissions)> GetUserRoleAndClaims(ApplicationUser user, CancellationToken ct = default)
-    {
-        var roles = await userManager.GetRolesAsync(user);
-
-        var permission = await (
-            from r in dbContext.Roles
-            join c in dbContext.RoleClaims
-            on r.Id equals c.RoleId
-            where roles.Contains(r.Name!)
-            select c.ClaimValue)
-            .Distinct()
-            .ToListAsync(ct);
-
-        return (roles, permission);
     }
 }

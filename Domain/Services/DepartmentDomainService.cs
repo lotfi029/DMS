@@ -30,7 +30,7 @@ public class DepartmentDomainService(
         if (await departmentRepository.ExistsAsync(e => e.Name == name, ct))
             return DepartmentErrors.DuplicatedName(name);
 
-        departmentRepository.Add(entity, ct);
+        departmentRepository.Add(entity);
 
         return Result.Success(entity.Id);
     }

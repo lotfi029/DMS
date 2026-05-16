@@ -9,5 +9,7 @@ public sealed record CreateEmployeeRequest(
     string JobTitle,
     string? RoleId,
     Guid? DepartmentId,
-    string? Notes
+    string? Notes,
+    IEnumerable<string> GrantPermissions,
+    IEnumerable<string> DenyPermissions
     );

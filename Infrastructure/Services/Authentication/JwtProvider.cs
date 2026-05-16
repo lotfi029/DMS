@@ -6,28 +6,28 @@ using System.Text.Json;
 namespace Infrastructure.Services.Authentication;
 
 public class JwtProvider(
-    IOptions<JwtOptions> jwtOptions) : IJwtProvider
+    IOptions<JwtOptions> jwtOptions,
+    IEffectivePermissionService permissionService) : IJwtProvider
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
-    public (string token, int expireMinutes) GenerateToken(ApplicationUser user, IEnumerable<string> roles, IEnumerable<string> permissions)
+    public async Task<(string token, int expireMinutes)> GenerateToken(
+        ApplicationUser user, 
+        IEnumerable<string> roles)
     {
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Name, user.UserName!)
+            new(JwtRegisteredClaimNames.Name, user.UserName!),
+            new("roles", JsonSerializer.Serialize(roles), JsonClaimValueTypes.JsonArray)
         };
 
-        if (roles is not null && roles.Any())
-        {
-            claims.Add(new(nameof(roles), JsonSerializer.Serialize(roles), JsonClaimValueTypes.JsonArray));
-        }
-        if (permissions is not null && permissions.Any())
-        {
-            claims.Add(new(DefaultPermissions.ClaimType, JsonSerializer.Serialize(permissions), JsonClaimValueTypes.JsonArray));
-        }
+
+        var permissions = await permissionService.ResolveAsync(user.Id);
+        foreach(var permission in permissions)
+            claims.Add(new Claim(DefaultPermissions.ClaimType, permission));
 
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));

@@ -74,6 +74,9 @@ public static class DefaultPermissions
         public static string GroupName => nameof(Permissions);
 
         public const string Read = "permissions.read";
+        public const string Grant = "permissions.grant";
+        public const string Deny = "permissions.deny";
+        public const string Revoke = "permissions.revoke";
         public const string AssignToRole = "permissions.assign_to_role";
         public const string RemoveFromRole = "permissions.remove_from_role";
 

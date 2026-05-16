@@ -16,10 +16,14 @@ public enum AuditAction
     RoleViewed,
 
     PermissionAssignedToRole = 400, PermissionRemovedFromRole, PermissionViewed,
+    PermissionGrantedToUser, PermissionDeniedFromUser, PermissionRevokedFromUser,
 
     DepartmentCreated = 500, DepartmentUpdated, DepartmentDeleted,
     DepartmentViewed, DepartmentListed, DepartmentUserViewed,
     UserAddedToDepartment, UserRemovedFromDepartment, UserMovedBetweenDepartments,
+
+    ClientCreated = 600, ClientUpdated, ClientDeleted,
+    ClientActivated, ClientDeactivated, ClientViewed, ClientListed,
 
     Read = 900, Create, Update, Delete, Export, Import,
 }

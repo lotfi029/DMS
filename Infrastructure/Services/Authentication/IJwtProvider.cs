@@ -2,6 +2,6 @@
 
 public interface IJwtProvider
 {
-    (string token, int expireMinutes) GenerateToken(ApplicationUser user, IEnumerable<string> roles, IEnumerable<string> permissions);
+    Task<(string token, int expireMinutes)> GenerateToken(ApplicationUser user, IEnumerable<string> roles);
     string? ValidateToken(string token);
 }

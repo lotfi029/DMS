@@ -8,12 +8,22 @@ public static class RolePermissions
             [DefaultRoles.Manager] = [.. DefaultPermissions.AllDefaultPermissions],
             [DefaultRoles.Admin] = [.. DefaultPermissions.AllDefaultPermissions],
             [DefaultRoles.DepartmentHead] = [
-                DefaultPermissions.Users.Read, 
-                DefaultPermissions.Departments.Read
+                DefaultPermissions.Users.Read,
+                DefaultPermissions.Employees.Read,
+                DefaultPermissions.Employees.ViewDetails,
+                DefaultPermissions.Departments.Read,
+                DefaultPermissions.Departments.ViewUsers,
+                DefaultPermissions.Departments.AssignToUser,
+                DefaultPermissions.Roles.Read,
+                DefaultPermissions.Roles.AssignToUser,
+                DefaultPermissions.Permissions.Read,
+                DefaultPermissions.Permissions.Grant,
             ],
             [DefaultRoles.Employee] = [
                 DefaultPermissions.Users.Read,
-                DefaultPermissions.Departments.Read
-            ]
+                DefaultPermissions.Users.ViewProfile,
+                DefaultPermissions.Departments.Read,
+                DefaultPermissions.Employees.Read,
+            ],
         };
 }

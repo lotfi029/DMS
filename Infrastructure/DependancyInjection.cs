@@ -77,6 +77,7 @@ public static class DependancyInjection
 
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
+        services.AddScoped<IEffectivePermissionService, EffectivePermissionService>();
 
         return services;
     }
@@ -86,6 +87,8 @@ public static class DependancyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IUserPermissionOverrideRepository,
+                   UserPermissionOverrideRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

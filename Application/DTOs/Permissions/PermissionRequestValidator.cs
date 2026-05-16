@@ -9,4 +9,3 @@ public sealed class PermissionRequestValidator : AbstractValidator<PermissionReq
             .MaximumLength(100).WithMessage("Permission name must not exceed 100 characters.");
     }
 }
-

@@ -60,6 +60,8 @@ internal sealed class EmployeeEndpoints : IEndpoint
             request.JobTitle,
             request.RoleId,
             request.DepartmentId,
+            request.GrantPermissions,
+            request.DenyPermissions,
             request.Notes);
 
         var result = await handler.HandleAsync(command, ct);

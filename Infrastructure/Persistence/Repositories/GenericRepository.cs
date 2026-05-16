@@ -40,7 +40,7 @@ public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepo
         return await query.Where(predicate).ToListAsync(ct);
     }
 
-    public void Add(T entity, CancellationToken ct = default)
+    public void Add(T entity)
     {
         DbContext.Set<T>().Add(entity);
     }

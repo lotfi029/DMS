@@ -5,6 +5,7 @@ public static class AuditModules
     public const string Auth = "Auth";
     public const string Users = "Users";
     public const string Employees = "Employees";
+    public const string Clients = "Clients";
     public const string Roles = "Roles";
     public const string Permissions = "Permissions";
     public const string Departments = "Departments";

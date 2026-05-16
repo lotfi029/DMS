@@ -1,9 +1,13 @@
-using Application.Features.Permissions.Queries.GetUserPermissions;
-using Application.Features.Permissions.Queries.GetAll;
-using Application.Features.Permissions.Commands.AssignToRole;
-using Application.Features.Permissions.Commands.RemoveFromRole;
-using Application.Features.Permissions.Queries.GetRolePermissions;
 using Application.DTOs.Permissions;
+using Application.Features.Permissions.Commands.AssignToRole;
+using Application.Features.Permissions.Commands.DenyOverride;
+using Application.Features.Permissions.Commands.GrantOverride;
+using Application.Features.Permissions.Commands.RemoveFromRole;
+using Application.Features.Permissions.Commands.RevokeOverride;
+using Application.Features.Permissions.Queries.GetAll;
+using Application.Features.Permissions.Queries.GetEffective;
+using Application.Features.Permissions.Queries.GetRolePermissions;
+
 
 namespace API.Endpoints;
 
@@ -12,16 +16,26 @@ internal sealed class PermissionEndpoints : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/permissions")
-            .WithTags("Permissions")
+            .WithTags("Permission Overrides")
             .RequireAuthorization()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
-        group.MapPost("{roleId:guid}/create", CreatePermissionAsync)
+        group.MapPost("/grant", GrantAsync)
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Grant))
+            .Produces(StatusCodes.Status204NoContent);
+        group.MapPost("/deny", DenyAsync)
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Deny))
+            .Produces(StatusCodes.Status204NoContent);
+        group.MapDelete("/revoke", RevokeAsync)
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Revoke))
+            .Produces(StatusCodes.Status204NoContent);
+
+        group.MapPost("{roleId:guid}", CreatePermissionAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.AssignToRole))
             .Produces(StatusCodes.Status204NoContent);
-        group.MapDelete("{roleId:guid}/delete", DeletePermissionAsync)
+        group.MapDelete("{roleId:guid}", DeletePermissionAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.RemoveFromRole))
             .Produces(StatusCodes.Status204NoContent);
 
@@ -35,7 +49,62 @@ internal sealed class PermissionEndpoints : IEndpoint
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Read))
             .Produces<IEnumerable<string>>(StatusCodes.Status200OK);
     }
+    private async Task<IResult> GrantAsync(
+        [FromBody] GrantPermissionRequest request,
+        [FromServices] ICommandHandler<GrantPermissionOverrideCommand> handler,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        var callerUserId = httpContext.GetUserId();
+        var command = new GrantPermissionOverrideCommand(
+            request.TargetUserId,
+            request.Permission,
+            callerUserId,
+            request.Reason,
+            request.ExpiresAt
+        );
+        var result = await handler.HandleAsync(command, ct);
 
+        return result.IsSuccess
+            ? Results.NoContent()
+            : result.ToProblem();
+    }
+    private async Task<IResult> DenyAsync(
+        [FromBody] DenyPermissionRequest request,
+        [FromServices] ICommandHandler<DenyPermissionOverrideCommand> handler,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        var callerUserId = httpContext.GetUserId();
+        var command = new DenyPermissionOverrideCommand(
+            request.TargetUserId,
+            request.Permission,
+            callerUserId,
+            request.Reason
+        );
+        var result = await handler.HandleAsync(command, ct);
+
+        return result.IsSuccess
+            ? Results.NoContent()
+            : result.ToProblem();
+    }
+    private async Task<IResult> RevokeAsync(
+        [FromBody] RevokePermissionRequest request,
+        [FromServices] ICommandHandler<RevokePermissionOverrideCommand> handler,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        var callerUserId = httpContext.GetUserId();
+        var command = new RevokePermissionOverrideCommand(
+            request.TargetUserId,
+            request.Permission,
+            callerUserId
+        );
+        var result = await handler.HandleAsync(command, ct);
+        return result.IsSuccess
+            ? Results.NoContent()
+            : result.ToProblem();
+    }
     private async Task<IResult> CreatePermissionAsync(
         [FromRoute] string roleId,
         [FromBody] PermissionRequest request,
@@ -55,10 +124,10 @@ internal sealed class PermissionEndpoints : IEndpoint
     }
     private async Task<IResult> GetUserPermissionsAsync(
         [FromRoute] string userId,
-        [FromServices] IQueryHandler<GetUserPermissionsQuery, IEnumerable<PermissionResponse>> handler,
+        [FromServices] IQueryHandler<GetUserEffectivePermissionsQuery, EffectivePermissionsResponse> handler,
         CancellationToken ct)
     {
-        var query = new GetUserPermissionsQuery(userId);
+        var query = new GetUserEffectivePermissionsQuery(userId);
         var result = await handler.HandleAsync(query, ct);
         
         return result.IsSuccess 

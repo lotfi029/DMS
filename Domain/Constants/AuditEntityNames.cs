@@ -4,10 +4,12 @@ public static class AuditEntityNames
 {
     // ── HRMS Entities ─────────────────────────────────────────────────────────
     public const string User = nameof(ApplicationUser);
-    public const string Employee = nameof(Employee);
+    public const string Employee = nameof(Entities.Employee);
     public const string Role = nameof(ApplicationRole);
     public const string RoleClaim = nameof(ApplicationRoleClaim);
-    public const string Department = nameof(Department);
+    public const string Department = nameof(Entities.Department);
+    public const string PermissionOverride = nameof(UserPermissionOverride);
+    public const string Client = nameof(Entities.Client);
 
     // ── MOMS Entities ─────────────────────────────────────────────────────────
     public const string Project = "Project";
