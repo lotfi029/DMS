@@ -65,6 +65,7 @@ internal sealed class RoleService(
             return UserErrors.NotFound;
 
         var inRole = await userManager.IsInRoleAsync(user, roleId);
+
         return inRole 
             ? Result.Success() 
             : RoleErrors.UserNotInRole;

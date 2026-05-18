@@ -20,6 +20,7 @@ internal sealed class CreateEmployeeCommandHandler(
     IAuditService auditService,
     IDepartmentRepository departmentRepository,
     IUserPermissionOverrideRepository userPermission,
+    IEmployeeDepartmentRepository employeeDepartmentRepository,
     ILogger<CreateEmployeeCommandHandler> logger) : ICommandHandler<CreateEmployeeCommand, Guid>
 {
     public async Task<Result<Guid>> HandleAsync(CreateEmployeeCommand command, CancellationToken ct = default)
@@ -45,7 +46,6 @@ internal sealed class CreateEmployeeCommandHandler(
 
             var employeeResult = employeeService.Create(
                 userId: registerResult.Value!,
-                departmentId: command.DepartmentId!.Value,
                 jobTitle: command.JobTitle,
                 notes: command.Notes
                 );
@@ -56,6 +56,11 @@ internal sealed class CreateEmployeeCommandHandler(
                 return employeeResult.Error;
             }
 
+            var employeeDepartment = EmployeeDepartment.Create(
+                employeeId: employeeResult.Value,
+                departmentId: command.DepartmentId!.Value);
+
+            employeeDepartmentRepository.Add(employeeDepartment);
             await unitOfWork.SaveChangesAsync(ct);
 
             if (command.GrantPermissions.Any() || command.DenyPermissions.Any())
@@ -100,7 +105,7 @@ internal sealed class CreateEmployeeCommandHandler(
         string userId, CancellationToken ct)
     {
 
-        foreach(var permission in grantPermissions)
+        foreach (var permission in grantPermissions)
         {
             if (!DefaultPermissions.AllDefaultPermissions.Contains(permission))
                 continue;

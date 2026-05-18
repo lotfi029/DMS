@@ -34,8 +34,7 @@ public sealed class Employee : Entity, IAuditable
         string jobTitle,
         string appUserId,
         DateOnly hireDate,
-        string? notes = null,
-        Guid? departmentId = null)
+        string? notes = null)
     {
         return new Employee(
             jobTitle: jobTitle,

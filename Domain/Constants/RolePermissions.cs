@@ -22,8 +22,7 @@ public static class RolePermissions
             [DefaultRoles.Employee] = [
                 DefaultPermissions.Users.Read,
                 DefaultPermissions.Users.ViewProfile,
-                DefaultPermissions.Departments.Read,
-                DefaultPermissions.Employees.Read,
+                DefaultPermissions.Departments.Read
             ],
         };
 }

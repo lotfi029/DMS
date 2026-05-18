@@ -40,7 +40,6 @@ internal sealed class PermissionEndpoints : IEndpoint
             .Produces(StatusCodes.Status204NoContent);
 
         group.MapGet("/user/{userId}", GetUserPermissionsAsync)
-            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Read))
             .Produces<IEnumerable<PermissionResponse>>(StatusCodes.Status200OK);
         group.MapGet("/", GetAllPermissionsAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Read))
@@ -48,6 +47,8 @@ internal sealed class PermissionEndpoints : IEndpoint
         group.MapGet("/role/{roleId}", GetRolePermissionsAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Read))
             .Produces<IEnumerable<string>>(StatusCodes.Status200OK);
+        group.MapGet("/me", GetMyEffectivePermissionsAsync)
+            .Produces<IEnumerable<PermissionResponse>>(StatusCodes.Status200OK);
     }
     private async Task<IResult> GrantAsync(
         [FromBody] GrantPermissionRequest request,
@@ -127,6 +128,19 @@ internal sealed class PermissionEndpoints : IEndpoint
         [FromServices] IQueryHandler<GetUserEffectivePermissionsQuery, EffectivePermissionsResponse> handler,
         CancellationToken ct)
     {
+        var query = new GetUserEffectivePermissionsQuery(userId);
+        var result = await handler.HandleAsync(query, ct);
+        
+        return result.IsSuccess 
+            ? Results.Ok(result.Value) 
+            : result.ToProblem();
+    }
+    private async Task<IResult> GetMyEffectivePermissionsAsync(
+        [FromServices] IQueryHandler<GetUserEffectivePermissionsQuery, EffectivePermissionsResponse> handler,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        var userId = httpContext.GetUserId();
         var query = new GetUserEffectivePermissionsQuery(userId);
         var result = await handler.HandleAsync(query, ct);
         

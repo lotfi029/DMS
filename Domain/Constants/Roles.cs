@@ -20,7 +20,7 @@ public static class DefaultRoles
         IsActive = true,
         CreatedAt = DateTime.UtcNow
     };
-    public static readonly ApplicationRole DepartmentHead = new() 
+    public static readonly ApplicationRole DepartmentHead = new()
     {
         Id = "e17fd8ab-91b2-40da-8dbc-c4eb9ce646ff",
         Name = "DepartmentHead",
@@ -66,6 +66,6 @@ public static class DefaultRoles
         CreatedAt = DateTime.UtcNow
     };
 
-    public static readonly IList<ApplicationRole> All = 
-        [ Admin, DepartmentHead, Employee, Manager, Client, Vendor, Contractor];
+    public static readonly IList<ApplicationRole> All =
+        [Admin, DepartmentHead, Employee, Manager, Client, Vendor, Contractor];
 }

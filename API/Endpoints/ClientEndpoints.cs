@@ -24,6 +24,10 @@ internal sealed class ClientEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound)
             .Produces<ClientResponse>(StatusCodes.Status200OK);
 
+        group.MapGet("/", GetAllAsync)
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Clients.Read))
+            .Produces<List<ClientResponse>>(StatusCodes.Status200OK);
+
     }
 
     private async Task<IResult> AddClientAsync(
@@ -53,6 +57,16 @@ internal sealed class ClientEndpoints : IEndpoint
         CancellationToken ct)
     {
         var query = new GetClientByIdQuery(id);
+        var result = await handler.HandleAsync(query, ct);
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
+            : result.ToProblem();
+    }
+    private async Task<IResult> GetAllAsync(
+        [FromServices] IQueryHandler<GetAllClientsQuery, List<ClientResponse>> handler,
+        CancellationToken ct)
+    {
+        var query = new GetAllClientsQuery();
         var result = await handler.HandleAsync(query, ct);
         return result.IsSuccess
             ? Results.Ok(result.Value)

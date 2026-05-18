@@ -7,7 +7,6 @@ internal sealed class EmployeeDomainService(
     public Result<Guid> Create(
         string userId,
         string jobTitle,
-        Guid departmentId,
         string? notes = null
         )
     {
@@ -15,7 +14,6 @@ internal sealed class EmployeeDomainService(
             jobTitle: jobTitle,
             appUserId: userId,
             hireDate: DateOnly.FromDateTime(DateTime.UtcNow),
-            departmentId: departmentId,
             notes: notes
         );
 

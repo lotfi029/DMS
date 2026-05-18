@@ -9,7 +9,7 @@ internal sealed class GetEmployeeByIdQueryHandler(
 {
     public async Task<Result<EmployeeResponse>> HandleAsync(GetEmployeeByIdQuery query, CancellationToken ct = default)
     {
-        var employee = await employeeRepository.GetByIdAsync(x => x.Id == query.Id, ["AppUser"] ,ct);
+        var employee = await employeeRepository.GetByIdAsync(x => x.Id == query.Id, [nameof(Employee.AppUser)], ct);
         if (employee is null)
             return EmployeeErrors.NotFound;
 

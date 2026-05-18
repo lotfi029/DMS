@@ -60,12 +60,12 @@ public class DepartmentDomainService(
 
         var rowsAffected = await employeeDepartmentRepository.ExecuteUpdateAsync(
             u => u.EmployeeId == employeeId,
-            u => u.SetProperty(p => p.DepartmentId, newDepartmentId), 
+            u => u.SetProperty(p => p.DepartmentId, newDepartmentId),
         ct);
-        
+
         if (rowsAffected == 0)
             return UserErrors.NotFound;
-        
+
         return Result.Success();
     }
     public async Task<Result> RemoveEmployeeAsync(Guid employeeId, Guid departmentId, CancellationToken ct = default)
@@ -75,7 +75,7 @@ public class DepartmentDomainService(
 
         var rowsAffected = await employeeDepartmentRepository.ExecuteUpdateAsync(
             u => u.EmployeeId == employeeId && u.DepartmentId == departmentId,
-            u => u.SetProperty(p => p.IsActive, false), 
+            u => u.SetProperty(p => p.IsActive, false),
         ct);
 
         if (rowsAffected == 0)

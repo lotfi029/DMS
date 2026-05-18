@@ -34,9 +34,9 @@ if (app.Environment.IsDevelopment())
 app.ApplyMigrations();
 await app.SeedDataAsync();
 
+app.UseCors("Policy1");
 app.UseHttpsRedirection();
 
-app.UseCors("Policy1");
 app.UseAuthorization();
 app.UseSerilogRequestLogging();
 app.MapEndpoints();

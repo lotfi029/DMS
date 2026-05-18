@@ -13,10 +13,10 @@ public sealed class UserPermissionOverride : Entity, IAuditable
     private UserPermissionOverride() { }
 
     public static UserPermissionOverride Grant(
-        string userId, 
+        string userId,
         string permission,
         string grantedById,
-        string? reason = null, 
+        string? reason = null,
         DateTime? expiresAt = null)
     {
         return new UserPermissionOverride
@@ -31,10 +31,10 @@ public sealed class UserPermissionOverride : Entity, IAuditable
         };
     }
     public static UserPermissionOverride Deny(
-        string userId, 
-        string permission, 
+        string userId,
+        string permission,
         string grantedById,
-        string? reason = null, 
+        string? reason = null,
         DateTime? expiresAt = null)
     {
         return new UserPermissionOverride

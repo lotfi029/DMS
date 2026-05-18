@@ -78,6 +78,7 @@ public static class DefaultPermissions
         public const string Deactivate = "departments.deactivate";
         public const string Delete = "departments.delete";
         public const string AssignDepartmentHead = "departments.assign_department_head";
+        public const string UnassignDepartmentHead = "departments.unassign_department_head";
         public const string AssignToUser = "departments.assign_to_user";
         public const string RemoveFromUser = "departments.remove_from_user";
         public const string MoveUser = "departments.move_user";
@@ -107,8 +108,8 @@ public static class DefaultPermissions
             typeof(Audit).GetFields().Select(f => f.GetValue(f) as string).ToList()!;
     }
     public static readonly IReadOnlyList<string> AllDefaultPermissions = [
-        .. Users.All, 
-        .. Roles.All, 
+        .. Users.All,
+        .. Roles.All,
         .. Departments.All,
         .. Permissions.All,
         .. Audit.All,

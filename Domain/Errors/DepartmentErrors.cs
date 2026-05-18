@@ -6,14 +6,14 @@ public static class DepartmentErrors
 
     public static Error DuplicatedName(string name)
         => Error.BadRequest(
-        $"{_code}.{nameof(DuplicatedName)}", 
+        $"{_code}.{nameof(DuplicatedName)}",
         $"Department with name '{name}' already exists.");
 
     public static Error NotFound
         => Error.NotFound(
-        $"{_code}.{nameof(NotFound)}", 
+        $"{_code}.{nameof(NotFound)}",
         $"Department was not found.");
-    
+
     public static Error AlreadyInDepartment
         => Error.BadRequest(
         $"{_code}.{nameof(AlreadyInDepartment)}",

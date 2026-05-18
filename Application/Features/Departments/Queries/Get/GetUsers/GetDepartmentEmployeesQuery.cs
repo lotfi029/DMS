@@ -10,12 +10,9 @@ internal sealed class GetDepartmentEmployeesQueryHandler(
 {
     public async Task<Result<List<EmployeeListResponse>>> HandleAsync(GetDepartmentEmployeesQuery query, CancellationToken ct = default)
     {
-        var result = await employeeDepartmentRepository.GetAllAsync(
-            predicate: ed => ed.DepartmentId == query.DepartmentId,
-            [nameof(EmployeeDepartment.Employee)],
-            ct);
+        var result = await employeeDepartmentRepository.GetEmployeeAsync(query.DepartmentId, ct);
 
-        if (result is null || result.Any())
+        if (result is null || !result.Any())
             return Result.Success((List<EmployeeListResponse>)[]);
 
         var response = result.Select(e => new EmployeeListResponse(
@@ -27,7 +24,7 @@ internal sealed class GetDepartmentEmployeesQueryHandler(
             e.Employee.JobTitle,
             e.Employee.IsActive,
             e.DepartmentId,
-            e.Department!.Name ?? null
+            null
             ))
             .ToList();
 

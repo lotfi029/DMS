@@ -19,7 +19,7 @@ internal sealed class GrantPermissionOverrideCommandHandler(
     {
         if (!DefaultPermissions.AllDefaultPermissions.Contains(command.Permission))
             return Error.BadRequest(
-                "InvalidPermission", 
+                "InvalidPermission",
                 $"The permission '{command.Permission}' is not a valid permission.");
 
         if (await repo.ExistsAsync(p => p.Permission == command.Permission && p.UserId == command.TargetUserId, ct))

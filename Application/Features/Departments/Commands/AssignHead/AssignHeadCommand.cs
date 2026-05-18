@@ -14,13 +14,13 @@ internal sealed class AssignDepartmentHeadCommandHandler(
 {
     public async Task<Result> HandleAsync(AssignDepartmentHeadCommand command, CancellationToken ct = default)
     {
-        if (await employeeRepository.GetByIdAsync(command.EmployeeId, ct) is not Employee employee)
+        if (await employeeRepository.GetByIdAsync(x => x.AppUserId == command.EmployeeId.ToString(), [], ct) is not { } employee)
             return EmployeeErrors.NotFound;
 
-        if (await roleService.UserInRoleAsync(employee.AppUserId, DefaultRoles.DepartmentHead.Id, ct) is { IsFailure: true } roleError)
+        if (await roleService.UserInRoleAsync(employee.AppUserId, DefaultRoles.DepartmentHead.Name!, ct) is { IsFailure: true } roleError)
             return roleError;
 
-        if (await departmentDomainService.AssignDepartmentHeadAsync(command.EmployeeId, command.DepartmentId, ct) is { IsFailure: true } domainError)
+        if (await departmentDomainService.AssignDepartmentHeadAsync(employee.Id, command.DepartmentId, ct) is { IsFailure: true } domainError)
             return domainError;
 
         await unitOfWork.SaveChangesAsync(ct);

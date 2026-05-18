@@ -11,7 +11,7 @@ public sealed class GetAllDepartmentsQueryHandler(
     {
         var entities = await repo.GetAllAsync(ct);
 
-        if (entities is null || entities.Any())
+        if (entities is null || !entities.Any())
             return Result.Success(Enumerable.Empty<DepartmentResponse>());
 
 

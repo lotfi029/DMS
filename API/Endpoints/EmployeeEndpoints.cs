@@ -46,7 +46,6 @@ internal sealed class EmployeeEndpoints : IEndpoint
 
     private async Task<IResult> CreateAsync(
         [FromBody] CreateEmployeeRequest request,
-        [FromServices] IValidator<CreateEmployeeRequest> validator,
         [FromServices] ICommandHandler<CreateEmployeeCommand, Guid> handler,
         CancellationToken ct
         )
@@ -92,7 +91,7 @@ internal sealed class EmployeeEndpoints : IEndpoint
 
         return result.IsSuccess
             ? Results.Ok(result.Value)
-            : Results.Problem();
+            : result.ToProblem();
     }
     private async Task<IResult> GetAllAsync(
         [FromBody] EmployeeQueryRequest queryRequest,

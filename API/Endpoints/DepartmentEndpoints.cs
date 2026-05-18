@@ -7,6 +7,7 @@ using Application.Features.Departments.Commands.Create;
 using Application.Features.Departments.Commands.Delete;
 using Application.Features.Departments.Commands.MoveUser;
 using Application.Features.Departments.Commands.RemoveUser;
+using Application.Features.Departments.Commands.UnAssignHead;
 using Application.Features.Departments.Commands.Update;
 using Application.Features.Departments.Queries.Get;
 using Application.Features.Departments.Queries.Get.GetUsers;
@@ -41,6 +42,9 @@ internal sealed class DepartmentEndpoints : IEndpoint
 
         group.MapPut("/{id:guid}/assign-head", AssignHeadAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Departments.AssignDepartmentHead))
+            .Produces(StatusCodes.Status204NoContent);
+        group.MapPut("/{id:guid}/unassign-head", UnAssignHeadAsync)
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Departments.UnassignDepartmentHead))
             .Produces(StatusCodes.Status204NoContent);
 
 
@@ -138,7 +142,19 @@ internal sealed class DepartmentEndpoints : IEndpoint
         [FromServices] ICommandHandler<AssignDepartmentHeadCommand> handler,
         CancellationToken ct)
     {
-        var command = new AssignDepartmentHeadCommand(request.UserId, id);
+        var command = new AssignDepartmentHeadCommand(id, request.UserId);
+        var result = await handler.HandleAsync(command, ct);
+
+        return result.IsSuccess
+            ? Results.NoContent()
+            : result.ToProblem();
+    }
+    private async Task<IResult> UnAssignHeadAsync(
+        [FromRoute] Guid id,
+        [FromServices] ICommandHandler<UnAssignDepartmentHeadCommand> handler,
+        CancellationToken ct)
+    {
+        var command = new UnAssignDepartmentHeadCommand(id);
         var result = await handler.HandleAsync(command, ct);
 
         return result.IsSuccess

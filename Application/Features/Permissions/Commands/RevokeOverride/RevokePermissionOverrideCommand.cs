@@ -20,11 +20,11 @@ internal sealed class RevokePermissionOverrideCommandHandler(
 
         if (rowsDeleted == 0)
             return Error.NotFound(
-                "PermissionOverrideNotFound", 
+                "PermissionOverrideNotFound",
                 $"No permission override found for user {command.TargetUserId} and permission {command.Permission}.");
 
         logger.LogInformation(
-            "Revoked permission override for user {TargetUserId} and permission {Permission}.", 
+            "Revoked permission override for user {TargetUserId} and permission {Permission}.",
             command.TargetUserId,
             command.Permission);
 

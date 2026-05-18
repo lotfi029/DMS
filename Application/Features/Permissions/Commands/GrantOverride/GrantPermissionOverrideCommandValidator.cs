@@ -25,5 +25,5 @@ internal sealed class GrantPermissionOverrideCommandValidator : AbstractValidato
         RuleFor(x => x.Reason)
             .MaximumLength(500)
             .When(x => x.Reason is not null);
-    }   
+    }
 }

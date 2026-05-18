@@ -2,6 +2,7 @@
 using Application.Features.Auths.Commands.Add;
 using Application.Features.Auths.Commands.RefreshToken;
 using Application.Features.Auths.Commands.Revoke;
+using Application.Features.Permissions.Queries.GetEffective;
 
 namespace API.Endpoints;
 
@@ -24,6 +25,10 @@ internal sealed class AuthEndpoints : IEndpoint
         group.MapPost("/revoke-refresh-token", RevokeRefreshTokenAsync)
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/me/permissions", GetMyEffectivePermissionsAsync)
+            .RequireAuthorization()
+            .Produces<EffectivePermissionsResponse>(StatusCodes.Status200OK);
 
     }
 
@@ -71,5 +76,17 @@ internal sealed class AuthEndpoints : IEndpoint
         return result.IsSuccess
             ? Results.NoContent()
             : result.ToProblem();
+    }
+
+
+    private async Task<IResult> GetMyEffectivePermissionsAsync(
+        HttpContext ctx,
+        [FromServices] IQueryHandler<GetUserEffectivePermissionsQuery, EffectivePermissionsResponse> handler,
+        CancellationToken ct)
+    {
+        var userId = ctx.GetUserId();
+        var query = new GetUserEffectivePermissionsQuery(userId);
+        var result = await handler.HandleAsync(query, ct);
+        return result.IsSuccess ? Results.Ok(result.Value) : result.ToProblem();
     }
 }

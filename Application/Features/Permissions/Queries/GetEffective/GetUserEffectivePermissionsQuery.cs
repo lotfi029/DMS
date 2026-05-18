@@ -7,7 +7,7 @@ public sealed record EffectivePermissionsResponse(
     string UserId,
     IEnumerable<string> Permissions,
     IEnumerable<PermissionOverrideDto> Overrides
-); 
+);
 public sealed record PermissionOverrideDto(
     Guid Id,
     string Permission,

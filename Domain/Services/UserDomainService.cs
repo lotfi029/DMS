@@ -8,7 +8,7 @@ internal sealed class UserDomainService(
         var rowsAffected = await userRepository
             .ExecuteUpdateAsync(
                 u => u.Id == userId && !u.IsActive,
-                u => u.SetProperty(p => p.IsActive, true), 
+                u => u.SetProperty(p => p.IsActive, true),
             ct);
 
         if (rowsAffected == 0)
@@ -39,7 +39,7 @@ internal sealed class UserDomainService(
 
     public async Task<Result<ApplicationUser>> GetByIdAsync(string userId, CancellationToken ct = default)
     {
-        if (await  userRepository.GetByIdAsync(x => x.Id == userId, ct: ct) is not { } user)
+        if (await userRepository.GetByIdAsync(x => x.Id == userId, ct: ct) is not { } user)
             return UserErrors.NotFound;
 
         return user;
@@ -66,7 +66,7 @@ internal sealed class UserDomainService(
 
         if (rowsAffected == 0)
             return UserErrors.NotFound;
-        
+
         return Result.Success();
     }
 }

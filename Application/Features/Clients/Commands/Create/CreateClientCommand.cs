@@ -60,13 +60,13 @@ internal sealed class CreateClientCommandHandler(
                 outcome: AuditOutcome.Success,
                 ct: ct
                 );
-            transaction.Commit();
+            await transaction.CommitAsync(ct);
             return Result.Success(client.Id);
         }
-        catch (Exception ex)
+        catch
         {
             await transaction.RollbackAsync(ct);
-            return Result.Success(Guid.Empty);
+            throw;
 
         }
     }

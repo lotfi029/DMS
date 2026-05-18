@@ -5,18 +5,18 @@ public class ApplicationUser : IdentityUser, IAuditable
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
-    public UserType UserType { get; set; } 
+    public UserType UserType { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime LastLoginAt {  get; set; } = DateTime.UtcNow;
+    public DateTime LastLoginAt { get; set; } = DateTime.UtcNow;
     public ICollection<RefreshToken> RefreshTokens { get; set; } = [];
 
     private ApplicationUser() : base() { }
 
     private ApplicationUser(
         string id,
-        string userName, 
-        string email, 
-        string firstName, 
+        string userName,
+        string email,
+        string firstName,
         string lastName,
         UserType userType,
         string? phonenumber = null,
@@ -45,9 +45,9 @@ public class ApplicationUser : IdentityUser, IAuditable
 
     public static ApplicationUser Create(
         string id,
-        string userName, 
-        string email, 
-        string firstName, 
+        string userName,
+        string email,
+        string firstName,
         string lastName,
         UserType userType,
         string? phonenumber = null,
@@ -57,14 +57,14 @@ public class ApplicationUser : IdentityUser, IAuditable
     {
         return new ApplicationUser(
             id: id,
-            userName: userName, 
-            email: email, 
-            firstName: firstName, 
-            lastName: lastName, 
+            userName: userName,
+            email: email,
+            firstName: firstName,
+            lastName: lastName,
             userType: userType,
-            phonenumber: phonenumber, 
-            securityStamp: securityStamp, 
-            concurrencyStamp: concurrencyStamp, 
+            phonenumber: phonenumber,
+            securityStamp: securityStamp,
+            concurrencyStamp: concurrencyStamp,
             passwordHashed: passwordHashed);
     }
 
