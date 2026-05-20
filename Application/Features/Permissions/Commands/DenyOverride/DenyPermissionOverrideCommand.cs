@@ -21,7 +21,7 @@ internal sealed class DenyPermissionOverrideCommandHandler(
                 "InvalidPermission",
                 $"The permission '{command.Permission}' is not a valid permission.");
 
-        if (await repo.ExistsAsync(p => p.Permission == command.Permission && p.UserId == command.TargetUserId, ct))
+        if (await repo.ExistsAsync(p => p.Permission == command.Permission && p.UserId == command.TargetUserId, ct: ct))
             return Error.NotFound(
                 "PermissionNotFound",
                 $"The permission '{command.Permission}' does not exist for user '{command.TargetUserId}'.");

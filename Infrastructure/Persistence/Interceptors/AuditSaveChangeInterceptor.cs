@@ -115,6 +115,10 @@ internal sealed class AuditSaveChangeInterceptor(
         AuditEntityNames.Department => AuditModules.Departments,
         AuditEntityNames.Role => AuditModules.Roles,
         AuditEntityNames.RoleClaim => AuditModules.Permissions,
+        AuditEntityNames.Employee => AuditModules.Employees,
+        AuditEntityNames.Client => AuditModules.Clients,
+        AuditEntityNames.Project => AuditModules.Projects,
+        AuditEntityNames.Stage => AuditModules.Stages,
         _ => AuditModules.System
     };
     private static string Serialize<T>(T value) =>

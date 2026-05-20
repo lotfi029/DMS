@@ -1,18 +1,53 @@
-﻿namespace Application.Features.Employees.Commands.Create;
+﻿using Application.DTOs.Employees;
+
+namespace Application.Features.Employees.Commands.Create;
 
 public sealed record CreateEmployeeCommand(
-    string FirstName,
-    string LastName,
-    string Email,
-    string UserName,
-    string Password,
-    string JobTitle,
-    string? RoleId,
-    Guid? DepartmentId,
-    IEnumerable<string> GrantPermissions,
-    IEnumerable<string> DenyPermissions,
-    string? Notes) : ICommand<Guid>;
-
+    CreateEmployeeRequest Request) : ICommand<Guid>;
+internal sealed class CreateEmployeeCommandValidator : AbstractValidator<CreateEmployeeCommand>
+{
+    public CreateEmployeeCommandValidator()
+    {
+        RuleFor(x => x.Request.FirstName).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.Request.LastName).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.Request.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Request.PhoneNumber)
+            .NotEmpty()
+            .MaximumLength(20)
+            .When(x => x.Request.PhoneNumber is not null);
+        RuleFor(x => x.Request.UserName)
+            .NotEmpty()
+            .MaximumLength(256);
+        RuleFor(x => x.Request.Password)
+            .NotEmpty()
+            .MinimumLength(8);
+        RuleFor(x => x.Request.JobTitle)
+            .NotEmpty()
+            .MaximumLength(200);
+        RuleFor(x => x.Request.ContractType)
+            .IsInEnum();
+        RuleFor(x => x.Request.DenyPermissions)
+            .ForEach(permission => permission.MaximumLength(100));
+        
+        RuleFor(x => x.Request.GrantPermissions)
+            .ForEach(permission => permission.MaximumLength(100));
+        
+        RuleFor(x => x.Request.EmergencyContactName)
+            .NotEmpty()
+            .When(x => x.Request.EmergencyContactName is not null);
+        
+        RuleFor(x => x.Request.EmergencyContactPhone)
+            .NotEmpty()
+            .MaximumLength(20)
+            .When(x => x.Request.EmergencyContactPhone is not null);
+        RuleFor(x => x.Request.DepartmentId)
+            .NotEmpty()
+            .When(x => x.Request.DepartmentId is not null);
+        RuleFor(x => x.Request.Notes)
+            .MaximumLength(2000)
+            .When(x => x.Request.Notes is not null);
+    }
+}
 internal sealed class CreateEmployeeCommandHandler(
     IEmployeeDomainService employeeService,
     IUnitOfWork unitOfWork,
@@ -25,18 +60,22 @@ internal sealed class CreateEmployeeCommandHandler(
 {
     public async Task<Result<Guid>> HandleAsync(CreateEmployeeCommand command, CancellationToken ct = default)
     {
-        if (!await departmentRepository.ExistsAsync(x => x.Id == command.DepartmentId, ct))
+        if (!await departmentRepository.ExistsAsync(x => x.Id == command.Request.DepartmentId, ct: ct))
             return DepartmentErrors.NotFound;
 
         var transaction = await unitOfWork.BeginTransactionAsync(ct);
         try
         {
             var registerRequest = new RegisterRequest(
-                command.FirstName, command.LastName,
-                command.Password, command.Email, command.UserName);
+                FirstName: command.Request.FirstName, 
+                LastName: command.Request.LastName,
+                Password: command.Request.Password, 
+                Email: command.Request.Email,
+                UserName: command.Request.UserName, 
+                PhoneNumber: command.Request.PhoneNumber ?? string.Empty);
 
             var registerResult = await authService.RegisterAsync(
-                command.RoleId!, UserType.Employee, registerRequest, ct);
+                command.Request.RoleId!, UserType.Employee, registerRequest, ct);
 
             if (registerResult.IsFailure)
             {
@@ -46,8 +85,11 @@ internal sealed class CreateEmployeeCommandHandler(
 
             var employeeResult = employeeService.Create(
                 userId: registerResult.Value!,
-                jobTitle: command.JobTitle,
-                notes: command.Notes
+                jobTitle: command.Request.JobTitle,
+                contractType: command.Request.ContractType,
+                emergencyContactName: command.Request.EmergencyContactName,
+                emergencyContactPhone: command.Request.EmergencyContactPhone,
+                notes: command.Request.Notes
                 );
 
             if (employeeResult.IsFailure)
@@ -58,16 +100,16 @@ internal sealed class CreateEmployeeCommandHandler(
 
             var employeeDepartment = EmployeeDepartment.Create(
                 employeeId: employeeResult.Value,
-                departmentId: command.DepartmentId!.Value);
+                departmentId: command.Request.DepartmentId!.Value);
 
             employeeDepartmentRepository.Add(employeeDepartment);
             await unitOfWork.SaveChangesAsync(ct);
 
-            if (command.GrantPermissions.Any() || command.DenyPermissions.Any())
+            if (command.Request.GrantPermissions.Any() || command.Request.DenyPermissions.Any())
             {
                 var permissionResult = await AddPermissions(
-                    command.GrantPermissions,
-                    command.DenyPermissions,
+                    command.Request.GrantPermissions,
+                    command.Request.DenyPermissions,
                     registerResult.Value!,
                     ct);
                 if (permissionResult.IsFailure)
@@ -89,7 +131,7 @@ internal sealed class CreateEmployeeCommandHandler(
 
             logger.LogInformation(
                 "Employee created: userId={UserId}, department={DeptId}, role={RoleId}",
-                registerResult.Value!, command.DepartmentId, command.RoleId ?? "Employee (default)");
+                registerResult.Value!, command.Request.DepartmentId, command.Request.RoleId ?? "Employee (default)");
 
             return employeeResult;
         }

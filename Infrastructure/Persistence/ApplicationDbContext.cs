@@ -1,4 +1,6 @@
-﻿namespace Infrastructure.Persistence;
+﻿using Application.Abstractions.Data;
+
+namespace Infrastructure.Persistence;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) 
     : IdentityDbContext<
@@ -9,7 +11,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         IdentityUserRole<string>, 
         IdentityUserLogin<string>, 
         ApplicationRoleClaim, 
-        IdentityUserToken<string>>(options)
+        IdentityUserToken<string>>(options), IApplicationDbContext
 {
     public DbSet<Department> Departments { get; set; }
     public DbSet<Employee> Employees { get; set; }

@@ -70,6 +70,7 @@ public static class LogMessages
     public const string Dept_UserAdded = "User {UserId} added to department {DepartmentId}";
     public const string Dept_UserRemoved = "User {UserId} removed from department {DepartmentId}";
     public const string Dept_UserMoved = "User {UserId} moved to department {DepartmentId}";
+    public const string Dept_AllUsersMoved = "All users moved from department {FromDepartmentId} to department {ToDepartmentId}";
 
     // ── Projects ─────────────────────────────────────────────────────────
     public const string Project_Created = "Project {ProjectCode} created for client {ClientName}";

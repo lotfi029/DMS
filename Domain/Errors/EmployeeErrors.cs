@@ -18,4 +18,14 @@ public static class EmployeeErrors
         => Error.Conflict(
             $"{_code}.{nameof(AlreadyActive)}",
             $"Employee is already active.");
+
+    public static Error InactiveException
+        => Error.Conflict(
+            $"{_code}.{nameof(InactiveException)}",
+            $"Error occure will inactive employee.");
+    public static Error ActiveException
+        => Error.Conflict(
+            $"{_code}.{nameof(ActiveException)}",
+            $"Error occure will active employee.");
+
 }

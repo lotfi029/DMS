@@ -33,10 +33,10 @@ if (app.Environment.IsDevelopment())
 }
 app.ApplyMigrations();
 await app.SeedDataAsync();
-
 app.UseCors("Policy1");
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
+app.UseExceptionHandler();
 app.UseAuthorization();
 app.UseSerilogRequestLogging();
 app.MapEndpoints();

@@ -5,5 +5,6 @@ public sealed record RegisterRequest(
     string LastName,
     string Password,
     string Email,
-    string UserName
+    string UserName,
+    string PhoneNumber
     );

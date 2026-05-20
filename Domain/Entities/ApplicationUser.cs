@@ -19,7 +19,7 @@ public class ApplicationUser : IdentityUser, IAuditable
         string firstName,
         string lastName,
         UserType userType,
-        string? phonenumber = null,
+        string? phoneNumber = null,
         string? securityStamp = null,
         string? concurrencyStamp = null,
         string? passwordHashed = null) : base(userName)
@@ -37,7 +37,7 @@ public class ApplicationUser : IdentityUser, IAuditable
         UserName = userName;
         NormalizedUserName = userName.ToUpper();
         PhoneNumberConfirmed = true;
-        PhoneNumber = phonenumber;
+        PhoneNumber = phoneNumber;
         SecurityStamp = securityStamp ?? Guid.NewGuid().ToString("D");
         ConcurrencyStamp = concurrencyStamp ?? Guid.NewGuid().ToString("D").ToUpper();
         PasswordHash = passwordHashed;
@@ -50,7 +50,7 @@ public class ApplicationUser : IdentityUser, IAuditable
         string firstName,
         string lastName,
         UserType userType,
-        string? phonenumber = null,
+        string? phoneNumber = null,
         string? securityStamp = null,
         string? concurrencyStamp = null,
         string? passwordHashed = null)
@@ -62,7 +62,7 @@ public class ApplicationUser : IdentityUser, IAuditable
             firstName: firstName,
             lastName: lastName,
             userType: userType,
-            phonenumber: phonenumber,
+            phoneNumber: phoneNumber,
             securityStamp: securityStamp,
             concurrencyStamp: concurrencyStamp,
             passwordHashed: passwordHashed);

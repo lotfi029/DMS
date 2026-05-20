@@ -18,7 +18,8 @@ public sealed class CreateUserCommandHandler(
             command.Request.LastName,
             command.Request.Password,
             command.Request.Email,
-            command.Request.UserName
+            command.Request.UserName,
+            ""
         );
 
         var registerResult = await authService.RegisterAsync(command.Request.RoleId! ?? string.Empty, UserType.Employee, newUser, ct);

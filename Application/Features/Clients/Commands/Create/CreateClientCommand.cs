@@ -31,7 +31,8 @@ internal sealed class CreateClientCommandHandler(
                     LastName: command.LastName,
                     Password: command.Password,
                     Email: command.Email,
-                    UserName: command.UserName
+                    UserName: command.UserName,
+                    PhoneNumber:  command.Phone
                     ),
                 ct
                 );

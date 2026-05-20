@@ -1,8 +1,7 @@
 namespace Application.Features.Departments.Queries.Get;
 
 public sealed record GetDepartmentByIdQuery(Guid Id) : IQuery<DepartmentResponse>;
-
-public sealed class GetDepartmentByIdQueryHandler(
+internal sealed class GetDepartmentByIdQueryHandler(
     IDepartmentRepository repo,
     IAuditService auditService
     ) : IQueryHandler<GetDepartmentByIdQuery, DepartmentResponse>
@@ -14,7 +13,20 @@ public sealed class GetDepartmentByIdQueryHandler(
         if (entity is null)
             return DepartmentErrors.NotFound;
 
-        var reponse = entity.Adapt<DepartmentResponse>();
+        var cnt = await repo.GetEmployeeCountAsync(entity.Id, ct);
+        var departmentHeadName = await repo.GetDepartmentNameAsync(query.Id, ct);
+
+        var response = new DepartmentResponse(
+            Id: entity.Id,
+            Name: entity.Name,
+            Description: entity.Description,
+            IsActive: entity.IsActive,
+            DepartmentHeadId: entity.DepartmentHeadId,
+            DepartmentHeadName: departmentHeadName,
+            EmployeeCount: cnt,
+            CreatedAt: entity.CreatedAt,
+            UpdatedAt: DateTime.MinValue
+            );
 
         await auditService.LogActionAsync(
             action: AuditAction.DepartmentViewed,
@@ -23,6 +35,6 @@ public sealed class GetDepartmentByIdQueryHandler(
             entityId: entity.Id.ToString(),
             ct: ct);
 
-        return reponse;
+        return response;
     }
 }

@@ -9,4 +9,7 @@ public interface IDepartmentDomainService
     Task<Result> RemoveEmployeeAsync(Guid employeeId, Guid departmentId, CancellationToken ct = default);
     Task<Result> DeleteAsync(Guid id, CancellationToken ct = default);
     Task<Result> AssignDepartmentHeadAsync(Guid employeeId, Guid departmentId, CancellationToken ct = default);
+    Task<Result> MoveAllEmployeeAsync(Guid fromDepartmentId, Guid toDepartmentId, CancellationToken ct = default);
+    Task<Result> DeactivateAsync(Guid id, Guid? newDepartmentId, CancellationToken ct = default);
+    Task<Result> ActivateAsync(Guid id, CancellationToken ct = default);
 }

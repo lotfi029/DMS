@@ -2,6 +2,19 @@ namespace Application.Features.Departments.Commands.Create;
 
 public sealed record CreateDepartmentCommand(CreateDepartmentRequest Request) : ICommand;
 
+internal sealed class CreateDepartmentCommandValidator : AbstractValidator<CreateDepartmentCommand>
+{
+    public CreateDepartmentCommandValidator()
+    {
+        RuleFor(x => x.Request.Name)
+            .NotNull().WithMessage("Department name is required.")
+            .Length(3, 100).WithMessage("Department name must be between 3 and 100 characters.");
+
+        RuleFor(x => x.Request.Description)
+            .MaximumLength(500).WithMessage("Department description must not exceed 500 characters.")
+            .When(x => x.Request.Description != null);
+    }
+}
 internal sealed class CreateDepartmentCommandHandler(
     IDepartmentDomainService domainService,
     IUnitOfWork unitOfWork,
@@ -12,7 +25,7 @@ internal sealed class CreateDepartmentCommandHandler(
     {
         logger.LogInformation(LogMessages.Dept_Creating, command.Request.Name);
 
-        var result = await domainService.CreateAsync(command.Request.Name, command.Request.Description, ct);
+        var result = await domainService.CreateAsync(command.Request.Name!, command.Request.Description, ct);
 
         if (result.IsFailure)
         {

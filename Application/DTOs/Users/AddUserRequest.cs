@@ -9,11 +9,3 @@ public sealed record AddUserRequest(
      string? RoleId,
      Guid? DepartmentId
     );
-
-
-
-
-public sealed record UpdateUserRequest(
-     string FirstName,
-     string LastName
-    );

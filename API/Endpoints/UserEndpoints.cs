@@ -7,9 +7,9 @@ using Application.Features.Users.Commands.Update;
 using Application.Features.Users.Queries.GetAll;
 using Application.Features.Users.Queries.GetById;
 
-namespace API.Endpoints; 
+namespace API.Endpoints;
 
-internal sealed class UserEndpoints : IEndpoint
+internal sealed class UserEndpoints 
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
@@ -31,7 +31,7 @@ internal sealed class UserEndpoints : IEndpoint
         group.MapPost("/{id}/activate", ActivateUserAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Users.Update))
             .Produces(StatusCodes.Status204NoContent);
-        
+
         group.MapPut("/{id:guid}/update", UpdateAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Users.Update))
             .Produces(StatusCodes.Status204NoContent);
@@ -65,8 +65,8 @@ internal sealed class UserEndpoints : IEndpoint
 
         var command = new CreateUserCommand(request);
         var result = await handler.HandleAsync(command, ct);
-        
-        return result.IsSuccess 
+
+        return result.IsSuccess
             ? Results.CreatedAtRoute("GetUserById", new { id = result.Value! }, result.Value)
             : result.ToProblem();
     }
@@ -82,9 +82,9 @@ internal sealed class UserEndpoints : IEndpoint
 
         var command = new UpdateUserCommand(id, request);
         var result = await handler.HandleAsync(command, ct);
-        
-        return result.IsSuccess 
-            ? Results.NoContent() 
+
+        return result.IsSuccess
+            ? Results.NoContent()
             : result.ToProblem();
     }
     private async Task<IResult> DeactivateUserAsync(
@@ -94,8 +94,8 @@ internal sealed class UserEndpoints : IEndpoint
     {
         var command = new DeactivateUserCommand(id);
         var result = await handler.HandleAsync(command, ct);
-        
-        return result.IsSuccess 
+
+        return result.IsSuccess
             ? Results.NoContent()
             : result.ToProblem();
     }
@@ -107,9 +107,9 @@ internal sealed class UserEndpoints : IEndpoint
     {
         var command = new ActivateUserCommand(id);
         var result = await handler.HandleAsync(command, ct);
-        
-        return result.IsSuccess 
-            ? Results.NoContent() 
+
+        return result.IsSuccess
+            ? Results.NoContent()
             : result.ToProblem();
     }
 
@@ -120,9 +120,9 @@ internal sealed class UserEndpoints : IEndpoint
     {
         var command = new DeleteUserCommand(id);
         var result = await handler.HandleAsync(command, ct);
-        
-        return result.IsSuccess 
-            ? Results.NoContent() 
+
+        return result.IsSuccess
+            ? Results.NoContent()
             : result.ToProblem();
     }
     private async Task<IResult> Profile(
@@ -145,12 +145,11 @@ internal sealed class UserEndpoints : IEndpoint
     {
         var query = new GetUserByIdQuery(id);
         var result = await handler.HandleAsync(query, ct);
-        
-        return result.IsSuccess 
-            ? Results.Ok(result.Value) 
+
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
             : result.ToProblem();
     }
-
     private async Task<IResult> GetAllUsersAsync(
         [FromServices] IQueryHandler<GetAllUsersQuery, IEnumerable<UserListResponse>> handler,
         HttpContext httpContext,
@@ -160,9 +159,9 @@ internal sealed class UserEndpoints : IEndpoint
 
         var query = new GetAllUsersQuery(userId);
         var result = await handler.HandleAsync(query, ct);
-        
-        return result.IsSuccess 
-            ? Results.Ok(result.Value) 
+
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
             : result.ToProblem();
     }
 }

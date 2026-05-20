@@ -5,48 +5,48 @@ internal sealed class GetAllEmployeeQueryValidator
 {
     public GetAllEmployeeQueryValidator()
     {
-        RuleFor(x => x.JobTitle)
+        RuleFor(x => x.Request.JobTitle)
             .MaximumLength(100)
-            .When(x => x.JobTitle is not null);
+            .When(x => x.Request.JobTitle is not null);
 
-        RuleFor(x => x.Role)
-            .MaximumLength(100)
-            .When(x => x.Role is not null);
-
-        RuleFor(x => x.DepartmentId)
+        RuleFor(x => x.Request.RoleIds)
             .NotEmpty()
-            .When(x => x.DepartmentId.HasValue);
+            .When(x => x.Request.RoleIds is not null);
 
-        RuleFor(x => x.IsActive)
+        RuleFor(x => x.Request.DepartmentIds)
+            .NotEmpty()
+            .When(x => x.Request.DepartmentIds is not null);
+
+        RuleFor(x => x.Request.IsActive)
             .NotNull()
-            .When(x => x.IsActive.HasValue);
+            .When(x => x.Request.IsActive.HasValue);
 
-        RuleFor(x => x.HireDateMin)
-            .LessThanOrEqualTo(x => x.HireDateMax)
-            .When(x => x.HireDateMin.HasValue && x.HireDateMax.HasValue);
+        RuleFor(x => x.Request.HireDateMin)
+            .LessThanOrEqualTo(x => x.Request.HireDateMax)
+            .When(x => x.Request.HireDateMin.HasValue && x.Request.HireDateMax.HasValue);
 
-        RuleFor(x => x.HireDateMax)
-            .GreaterThanOrEqualTo(x => x.HireDateMin)
-            .When(x => x.HireDateMin.HasValue && x.HireDateMax.HasValue);
+        RuleFor(x => x.Request.HireDateMax)
+            .GreaterThanOrEqualTo(x => x.Request.HireDateMin)
+            .When(x => x.Request.HireDateMin.HasValue && x.Request.HireDateMax.HasValue);
 
-        RuleFor(x => x.LastLoginDateMin)
-            .LessThanOrEqualTo(x => x.LastLoginDateMax)
-            .When(x => x.LastLoginDateMin.HasValue && x.LastLoginDateMax.HasValue);
+        RuleFor(x => x.Request.LastLoginDateMin)
+            .LessThanOrEqualTo(x => x.Request.LastLoginDateMax)
+            .When(x => x.Request.LastLoginDateMin.HasValue && x.Request.LastLoginDateMax.HasValue);
 
-        RuleFor(x => x.LastLoginDateMax)
-            .GreaterThanOrEqualTo(x => x.LastLoginDateMin)
-            .When(x => x.LastLoginDateMin.HasValue && x.LastLoginDateMax.HasValue);
+        RuleFor(x => x.Request.LastLoginDateMax)
+            .GreaterThanOrEqualTo(x => x.Request.LastLoginDateMin)
+            .When(x => x.Request.LastLoginDateMin.HasValue && x.Request.LastLoginDateMax.HasValue);
 
-        RuleFor(x => x.CreatedAtMin)
-            .LessThanOrEqualTo(x => x.CreatedAtMax)
-            .When(x => x.CreatedAtMin.HasValue && x.CreatedAtMax.HasValue);
+        RuleFor(x => x.Request.CreatedAtMin)
+            .LessThanOrEqualTo(x => x.Request.CreatedAtMax)
+            .When(x => x.Request.CreatedAtMin.HasValue && x.Request.CreatedAtMax.HasValue);
 
-        RuleFor(x => x.CreatedAtMax)
-            .GreaterThanOrEqualTo(x => x.CreatedAtMin)
-            .When(x => x.CreatedAtMin.HasValue && x.CreatedAtMax.HasValue);
+        RuleFor(x => x.Request.CreatedAtMax)
+            .GreaterThanOrEqualTo(x => x.Request.CreatedAtMin)
+            .When(x => x.Request.CreatedAtMin.HasValue && x.Request.CreatedAtMax.HasValue);
 
-        RuleFor(x => x.UserType)
+        RuleFor(x => x.Request.UserType)
             .IsInEnum()
-            .When(x => x.UserType.HasValue);
+            .When(x => x.Request.UserType.HasValue);
     }
 }

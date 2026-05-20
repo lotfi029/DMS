@@ -1,8 +1,13 @@
 namespace Application.DTOs.Departments;
 
-public record DepartmentResponse(
+public sealed record DepartmentResponse(
     Guid Id,
     string Name,
     string? Description,
-    Guid DepartmentHeadId,
-    DateTime CreatedAt);
+    bool IsActive,
+    Guid? DepartmentHeadId,
+    string? DepartmentHeadName,
+    int EmployeeCount,
+    DateTime CreatedAt,
+    DateTime UpdatedAt
+);

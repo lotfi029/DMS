@@ -9,7 +9,7 @@ public class DepartmentDomainService(
     {
         var entity = Department.Create(name, description);
 
-        if (await departmentRepository.ExistsAsync(e => e.Name == name, ct))
+        if (await departmentRepository.ExistsAsync(e => e.Name == name, ct: ct))
             return DepartmentErrors.DuplicatedName(name);
 
         departmentRepository.Add(entity);
@@ -33,7 +33,7 @@ public class DepartmentDomainService(
     }
     public async Task<Result> AddEmployeeAsync(Guid employeeId, Guid departmentId, CancellationToken ct = default)
     {
-        if (!await employeeRepository.ExistsAsync(e => e.Id == employeeId, ct))
+        if (!await employeeRepository.ExistsAsync(e => e.Id == employeeId, ct: ct))
             return UserErrors.NotFound;
 
         if (!await departmentRepository.ExistsAsync(e => e.Id == departmentId, ct: ct))
@@ -52,7 +52,7 @@ public class DepartmentDomainService(
         if (await employeeDepartmentRepository.ExistsAsync(ed => ed.EmployeeId == employeeId && ed.DepartmentId == newDepartmentId, ct: ct))
             return DepartmentErrors.AlreadyInDepartment;
 
-        if (!await employeeRepository.ExistsAsync(e => e.Id == employeeId, ct))
+        if (!await employeeRepository.ExistsAsync(e => e.Id == employeeId, ct: ct))
             return UserErrors.NotFound;
 
         if (!await departmentRepository.ExistsAsync(e => e.Id == newDepartmentId, ct: ct))
@@ -70,7 +70,7 @@ public class DepartmentDomainService(
     }
     public async Task<Result> RemoveEmployeeAsync(Guid employeeId, Guid departmentId, CancellationToken ct = default)
     {
-        if (!await employeeDepartmentRepository.ExistsAsync(e => e.EmployeeId == employeeId && e.DepartmentId == departmentId, ct))
+        if (!await employeeDepartmentRepository.ExistsAsync(e => e.EmployeeId == employeeId && e.DepartmentId == departmentId, ct: ct))
             return DepartmentErrors.UserNotInDepartment;
 
         var rowsAffected = await employeeDepartmentRepository.ExecuteUpdateAsync(
@@ -86,14 +86,15 @@ public class DepartmentDomainService(
 
     public async Task<Result> UpdateAsync(Guid id, string name, string? description, CancellationToken ct = default)
     {
-        if (await departmentRepository.ExistsAsync(e => e.Name == name && e.Id != id, ct))
+        if (await departmentRepository.ExistsAsync(e => e.Name == name && e.Id != id, ct: ct))
             return DepartmentErrors.DuplicatedName(name);
 
         var affectedRows = await departmentRepository.ExecuteUpdateAsync(
             d => d.Id == id,
             d =>
             {
-                d.SetProperty(p => p.Name, name);
+                if (!string.IsNullOrWhiteSpace(name))
+                    d.SetProperty(p => p.Name, name);
 
                 if (!string.IsNullOrWhiteSpace(description))
                     d.SetProperty(p => p.Description, description);
@@ -105,7 +106,67 @@ public class DepartmentDomainService(
 
         return Result.Success();
     }
+    public async Task<Result> ActivateAsync(
+        Guid id,
+        CancellationToken ct = default)
+    {
+        var affectedRows = await departmentRepository
+            .ExecuteUpdateAsync(
+                d => d.Id == id, 
+                d => d.SetProperty(p => p.IsActive, true),
+                ct);
 
+        if (affectedRows == 0)
+            return DepartmentErrors.NotFound;
+
+        return Result.Success();
+    }
+    public async Task<Result> DeactivateAsync(
+        Guid id,
+        Guid? newDepartmentId,
+        CancellationToken ct = default)
+    {
+        var affectedRows = await departmentRepository
+            .ExecuteUpdateAsync(
+                d => d.Id == id, 
+                d => d.SetProperty(p => p.IsActive, false),
+                ct);
+
+        if (affectedRows == 0)
+            return DepartmentErrors.NotFound;
+
+        var employeesInDepartment = await employeeDepartmentRepository
+            .ExecuteUpdateAsync(
+                ed => ed.DepartmentId == id,
+                ed => ed.SetProperty(p => p.IsActive, false),
+                ct);
+
+        if (employeesInDepartment == 0 || !newDepartmentId.HasValue)
+            return Result.Success();
+
+        if (await MoveAllEmployeeAsync(id, newDepartmentId.Value, ct) is { IsFailure: true } movingErrors)
+            return movingErrors;
+
+        return Result.Success();
+    }
+    public async Task<Result> MoveAllEmployeeAsync(Guid fromDepartmentId, Guid toDepartmentId, CancellationToken ct = default)
+    {
+        if (!await departmentRepository.ExistsAsync(e => e.Id == fromDepartmentId, ct: ct))
+            return DepartmentErrors.NotFound;
+
+        if (!await departmentRepository.ExistsAsync(e => e.Id == toDepartmentId, ct: ct))
+            return DepartmentErrors.NotFound;
+
+        var affectedRows = await employeeDepartmentRepository.ExecuteUpdateAsync(
+            ed => ed.DepartmentId == fromDepartmentId,
+            ed => ed.SetProperty(p => p.DepartmentId, toDepartmentId),
+            ct);
+
+        if (affectedRows == 0)
+            return DepartmentErrors.NoEmployeesToMove;
+
+        return Result.Success();
+    }
     public async Task<Result> DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var affectedRows = await departmentRepository

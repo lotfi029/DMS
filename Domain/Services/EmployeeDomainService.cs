@@ -7,6 +7,10 @@ internal sealed class EmployeeDomainService(
     public Result<Guid> Create(
         string userId,
         string jobTitle,
+        ContractType contractType,
+        string? phoneNumber = null,
+        string? emergencyContactName = null,
+        string? emergencyContactPhone = null,
         string? notes = null
         )
     {
@@ -14,6 +18,11 @@ internal sealed class EmployeeDomainService(
             jobTitle: jobTitle,
             appUserId: userId,
             hireDate: DateOnly.FromDateTime(DateTime.UtcNow),
+            contractType: contractType,
+            phoneNumber: phoneNumber,
+            emergencyName: emergencyContactName,
+            emergencyPhone: emergencyContactPhone,
+
             notes: notes
         );
 
@@ -27,6 +36,10 @@ internal sealed class EmployeeDomainService(
         string? firstName,
         string? lastName,
         string? jobTitle = null,
+        ContractType? contractType = null,
+        string? phoneNumber = null,
+        string? emergencyContactName = null,
+        string? emergencyContactPhone = null,
         string? notes = null,
         CancellationToken ct = default)
     {
@@ -35,18 +48,34 @@ internal sealed class EmployeeDomainService(
 
         await employeeRepository.ExecuteUpdateAsync(
             x => x.Id == id,
-            setter => setter
-                .SetProperty(e => e.JobTitle, jobTitle ?? employee.JobTitle)
-                .SetProperty(e => e.Notes, notes ?? employee.Notes),
+            setter =>
+            {
+                if (jobTitle is not null)
+                    setter.SetProperty(e => e.JobTitle, jobTitle);
+                if (contractType is not null)
+                    setter.SetProperty(e => e.ContractType, contractType.Value);
+                if (phoneNumber is not null)
+                    setter.SetProperty(e => e.PhoneNumber, phoneNumber);
+                if (emergencyContactName is not null)
+                    setter.SetProperty(e => e.EmergencyContactName, emergencyContactName);
+                if (emergencyContactPhone is not null)
+                    setter.SetProperty(e => e.EmergencyContactPhone, emergencyContactPhone);
+                if (notes is not null)
+                    setter.SetProperty(e => e.Notes, notes);
+            },
             ct: ct
             );
 
 
         await userRepository.ExecuteUpdateAsync(
             x => x.Id == employee.AppUserId,
-            setter => setter
-                .SetProperty(u => u.FirstName, uu => firstName ?? uu.FirstName)
-                .SetProperty(u => u.LastName, uu => lastName ?? uu.LastName),
+            setter => 
+            { 
+                if (firstName is not null)
+                    setter.SetProperty(u => u.FirstName, firstName);
+                if (lastName is not null)
+                    setter.SetProperty(u => u.LastName, lastName);
+            },
             ct: ct
             );
 

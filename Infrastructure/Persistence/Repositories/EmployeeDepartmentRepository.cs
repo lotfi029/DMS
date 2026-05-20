@@ -28,9 +28,19 @@ internal sealed class EmployeeDepartmentRepository(ApplicationDbContext dbContex
         var query = await DbContext.EmployeeDepartments
             .Include(x => x.Employee)
                 .ThenInclude(e => e.AppUser)
+            .Include(x => x.Department)
             .Where(ed => ed.DepartmentId == departmentId)
             .ToListAsync(ct);
 
+        return query;
+    }
+
+    public async Task<IEnumerable<EmployeeDepartment>> GetDepartmentAsync(Guid employeeId, CancellationToken ct = default)
+    {
+        var query = await DbContext.EmployeeDepartments
+            .Include(x => x.Department)
+            .Where(ed => ed.EmployeeId == employeeId)
+            .ToListAsync(ct);
         return query;
     }
 }

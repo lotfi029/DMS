@@ -23,4 +23,9 @@ public static class DepartmentErrors
         => Error.BadRequest(
         $"{_code}.{nameof(UserNotInDepartment)}",
         $"User is not in the specified department.");
+
+    public static Error NoEmployeesToMove
+        => Error.BadRequest(
+            $"{_code}.{nameof(NoEmployeesToMove)}",
+            $"No employee to move in the specified department.");
 }

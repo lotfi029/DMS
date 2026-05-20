@@ -22,7 +22,7 @@ internal sealed class GrantPermissionOverrideCommandHandler(
                 "InvalidPermission",
                 $"The permission '{command.Permission}' is not a valid permission.");
 
-        if (await repo.ExistsAsync(p => p.Permission == command.Permission && p.UserId == command.TargetUserId, ct))
+        if (await repo.ExistsAsync(p => p.Permission == command.Permission && p.UserId == command.TargetUserId, ct: ct))
             return Error.Conflict(
                 "PermissionAlreadyExists",
                 $"The permission '{command.Permission}' already exists for user '{command.TargetUserId}'.");

@@ -2,12 +2,12 @@
 
 public sealed record EmployeeListResponse(
     Guid Id,
-    string AppUserId,
+    string UserId,
     string FirstName,
     string LastName,
+    string FullName,
     string Email,
     string JobTitle,
     bool IsActive,
-    Guid? DepartmentId,
-    string? DepartmentName
-    );
+    IEnumerable<DepartmentFromEmployeeResponse> Departments
+);

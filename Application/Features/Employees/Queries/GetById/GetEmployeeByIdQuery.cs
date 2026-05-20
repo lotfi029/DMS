@@ -5,17 +5,42 @@ namespace Application.Features.Employees.Queries.GetById;
 public sealed record GetEmployeeByIdQuery(Guid Id) : IQuery<EmployeeResponse>;
 
 internal sealed class GetEmployeeByIdQueryHandler(
-    IEmployeeRepository employeeRepository) : IQueryHandler<GetEmployeeByIdQuery, EmployeeResponse>
+    IEmployeeRepository employeeRepository,
+    IEmployeeDepartmentRepository employeeDepartmentRepository,
+    IRoleService roleService) : IQueryHandler<GetEmployeeByIdQuery, EmployeeResponse>
 {
     public async Task<Result<EmployeeResponse>> HandleAsync(GetEmployeeByIdQuery query, CancellationToken ct = default)
     {
-        var employee = await employeeRepository.GetByIdAsync(x => x.Id == query.Id, [nameof(Employee.AppUser)], ct);
+        var employee = await employeeRepository.GetByIdAsync(x => x.Id == query.Id, include: [nameof(Employee.AppUser)], ct: ct);
         if (employee is null)
             return EmployeeErrors.NotFound;
 
-        var response = employee.Adapt<EmployeeResponse>();
+        var depts = await employeeDepartmentRepository.GetDepartmentAsync(query.Id, ct);
+        var roles = await roleService.GetUserRolesAsync(employee.AppUserId, ct);
 
-        return response;
+        var reponse = new EmployeeResponse(
+            Id: employee.Id,
+            UserId: employee.AppUserId,
+            FirstName: employee.AppUser.FirstName,
+            LastName: employee.AppUser.LastName,
+            FullName: $"{employee.AppUser.FirstName} {employee.AppUser.LastName}",
+            Email: employee.AppUser.Email!,
+            UserName: employee.AppUser.UserName!,
+            JobTitle: employee.JobTitle,
+            ContractType: employee.ContractType.ToString()!,
+            PhoneNumber: employee.PhoneNumber,
+            EmergencyContactName: employee.EmergencyContactName,
+            EmergencyContactPhone: employee.EmergencyContactPhone,
+            HireDate: employee.HireDate,
+            EndDate: employee.EndDate,
+            IsActive: employee.IsActive,
+            CreatedAt: employee.CreatedAt,
+            LastLoginAt: employee.AppUser.LastLoginAt,
+            Notes: employee.Notes,
+            Departments: depts.Select(d => new DepartmentFromEmployeeResponse(d.DepartmentId, d.Department.Name)),
+            Roles: roles.Value!.Select(r => new RoleForEmployeeResponse(r.Id, r.RoleName)));
+
+        return reponse;
     }
 }
 

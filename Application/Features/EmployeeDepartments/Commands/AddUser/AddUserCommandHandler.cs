@@ -1,13 +1,10 @@
-﻿namespace Application.Features.Departments.Commands.AddUser;
-
-public sealed record AddUserToDepartmentCommand(Guid EmployeeId, Guid DepartmentId) : ICommand;
-
+﻿namespace Application.Features.EmployeeDepartments.Commands.AddUser;
 internal sealed class AddUserCommandHandler(
     IDepartmentDomainService departmentDomainService,
     IAuditService auditService,
-    ILogger<AddUserCommandHandler> logger) : ICommandHandler<AddUserToDepartmentCommand>
+    ILogger<AddUserCommandHandler> logger) : ICommandHandler<EmployeeDepartmentCommand>
 {
-    public async Task<Result> HandleAsync(AddUserToDepartmentCommand command, CancellationToken ct = default)
+    public async Task<Result> HandleAsync(EmployeeDepartmentCommand command, CancellationToken ct = default)
     {
         var result = await departmentDomainService.AddEmployeeAsync(command.EmployeeId, command.DepartmentId, ct);
 

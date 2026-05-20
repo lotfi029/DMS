@@ -1,6 +1,7 @@
 using Application.DTOs.Clients;
 using Application.Features.Clients.Commands.Create;
-using Application.Features.Clients.Queries;
+using Application.Features.Clients.Queries.GetAll;
+using Application.Features.Clients.Queries.GetById;
 
 namespace API.Endpoints;
 

@@ -22,6 +22,8 @@ public enum AuditAction
     DepartmentViewed, DepartmentListed, DepartmentUserViewed,
     UserAddedToDepartment, UserRemovedFromDepartment, UserMovedBetweenDepartments,
     AssignedDepartmentHead, RemovedDepartmentHead,
+    DepartmentActivated, DepartmentDeactivated,
+    AllUsersMovedBetweenDepartments,
 
     ClientCreated = 600, ClientUpdated, ClientDeleted,
     ClientActivated, ClientDeactivated, ClientViewed, ClientListed,

@@ -9,7 +9,7 @@ public sealed class GetAllDepartmentsQueryHandler(
 {
     public async Task<Result<IEnumerable<DepartmentResponse>>> HandleAsync(GetAllDepartmentsQuery query, CancellationToken ct = default)
     {
-        var entities = await repo.GetAllAsync(ct);
+        var entities = await repo.GetAllAsync(ct: ct);
 
         if (entities is null || !entities.Any())
             return Result.Success(Enumerable.Empty<DepartmentResponse>());

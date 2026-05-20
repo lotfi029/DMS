@@ -7,9 +7,13 @@ public sealed record CreateEmployeeRequest(
     string UserName,
     string Password,
     string JobTitle,
-    string? RoleId,
+    string RoleId, 
+    ContractType ContractType,
     Guid? DepartmentId,
-    string? Notes,
-    IEnumerable<string> GrantPermissions,
-    IEnumerable<string> DenyPermissions
+    string? PhoneNumber = null,
+    string? EmergencyContactName = null,
+    string? EmergencyContactPhone = null,
+    string? Notes = null,
+    IEnumerable<string> GrantPermissions = default!,
+    IEnumerable<string> DenyPermissions = default!
     );

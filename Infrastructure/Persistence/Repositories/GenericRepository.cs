@@ -7,11 +7,18 @@ public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepo
     protected readonly ApplicationDbContext DbContext = dbContext;
     public async Task<T?> GetByIdAsync(object id, CancellationToken ct = default)
     {
-        return await DbContext.Set<T>().FindAsync([id], ct);
+        return await DbContext.Set<T>()
+            .FindAsync([id], ct);
     }
-    public async Task<T?> GetByIdAsync(Expression<Func<T, bool>> predicate, string[]? include = null, CancellationToken ct = default)
+    public async Task<T?> GetByIdAsync(
+        Expression<Func<T, bool>> predicate, 
+        bool asNoTracking = true,
+        string[]? filtersKeys = null,
+        string[]? include = null, 
+        CancellationToken ct = default)
     {
-        var query = DbContext.Set<T>().AsQueryable();
+        var query = DbContext.Set<T>().AsQueryable()
+            .IgnoreAutoIncludes();
 
         if (include != null)
         {
@@ -20,17 +27,45 @@ public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepo
                 query = query.Include(navigationProperty);
             }
         }
+
+        if (filtersKeys is not null)
+        {
+            query.IgnoreQueryFilters(filtersKeys);
+        }
+
+        if (asNoTracking)
+            query.AsNoTracking();
+
+
 
         return await query.SingleOrDefaultAsync(predicate, ct);
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync(CancellationToken ct = default)
+    public async Task<IEnumerable<T>> GetAllAsync(
+        bool asNoTracking = true,
+        string[]? filtersKeys = null,
+        CancellationToken ct = default)
     {
-        return await DbContext.Set<T>().ToListAsync(ct);
+        var query = DbContext.Set<T>()
+            .IgnoreAutoIncludes();
+
+        if (filtersKeys is not null)
+            query.IgnoreQueryFilters(filtersKeys);
+
+        if (asNoTracking)
+            query.AsNoTracking();
+
+        return await query.ToListAsync(ct);
     }
-    public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate, string[]? include = null, CancellationToken ct = default)
+    public async Task<IEnumerable<T>> GetAllAsync(
+        Expression<Func<T, bool>> predicate, 
+        bool asNoTracking = true, 
+        string[]? include = null,
+        string[]? filterKeys = null, 
+        CancellationToken ct = default)
     {
-        var query = DbContext.Set<T>().AsQueryable();
+        var query = DbContext.Set<T>().AsQueryable()
+            .IgnoreAutoIncludes();
 
         if (include != null)
         {
@@ -39,6 +74,11 @@ public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepo
                 query = query.Include(navigationProperty);
             }
         }
+        if (filterKeys is not null)
+            query.IgnoreQueryFilters(filterKeys);
+
+        if (asNoTracking)
+            query.AsNoTracking();
 
         return await query.Where(predicate).ToListAsync(ct);
     }
@@ -47,12 +87,14 @@ public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepo
     {
         DbContext.Set<T>().Add(entity);
     }
+    public void Add(IEnumerable<T> entities)
+    {
+        DbContext.Set<T>().AddRange(entities);
+    }
 
-    public async Task<T> UpdateAsync(T entity, CancellationToken ct = default)
+    public void Update(T entity)
     {
         DbContext.Set<T>().Update(entity);
-        await DbContext.SaveChangesAsync(ct);
-        return entity;
     }
 
     public async Task<int> ExecuteDeleteAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default)
@@ -71,8 +113,17 @@ public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepo
             .ExecuteUpdateAsync(setPropertyCalls, ct);
     }
 
-    public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default)
+    public async Task<bool> ExistsAsync(
+        Expression<Func<T, bool>> predicate,
+        string[]? filtersKeys = null,
+        CancellationToken ct = default)
     {
-        return await DbContext.Set<T>().AnyAsync(predicate, ct);
+        var query = DbContext.Set<T>()
+            .IgnoreAutoIncludes();
+
+        if (filtersKeys != null)
+            query.IgnoreQueryFilters(filtersKeys);
+
+        return await query.AnyAsync(predicate, ct);
     }
 }

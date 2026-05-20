@@ -1,13 +1,10 @@
 namespace Application.Features.Departments.Commands.Delete;
-
-public sealed record DeleteDepartmentCommand(Guid Id) : ICommand;
-
 internal sealed class DeleteDepartmentCommandHandler(
     IDepartmentDomainService domainService,
     IAuditService auditService,
-    ILogger<DeleteDepartmentCommandHandler> logger) : ICommandHandler<DeleteDepartmentCommand>
+    ILogger<DeleteDepartmentCommandHandler> logger) : ICommandHandler<DepartmentCommand>
 {
-    public async Task<Result> HandleAsync(DeleteDepartmentCommand command, CancellationToken ct = default)
+    public async Task<Result> HandleAsync(DepartmentCommand command, CancellationToken ct = default)
     {
         var result = await domainService.DeleteAsync(command.Id, ct);
 

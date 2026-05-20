@@ -1,13 +1,10 @@
-﻿namespace Application.Features.Departments.Commands.RemoveUser;
-
-public sealed record RemoveEmployeeFromDepartmentCommand(Guid EmployeeId, Guid DepartmentId) : ICommand;
-
+﻿namespace Application.Features.EmployeeDepartments.Commands.RemoveUser;
 internal sealed class RemoveEmployeeFromDepartmentCommandHandler(
     IDepartmentDomainService departmentDomainService,
     IAuditService auditService,
-    ILogger<RemoveEmployeeFromDepartmentCommandHandler> logger) : ICommandHandler<RemoveEmployeeFromDepartmentCommand>
+    ILogger<RemoveEmployeeFromDepartmentCommandHandler> logger) : ICommandHandler<EmployeeDepartmentCommand>
 {
-    public async Task<Result> HandleAsync(RemoveEmployeeFromDepartmentCommand command, CancellationToken ct = default)
+    public async Task<Result> HandleAsync(EmployeeDepartmentCommand command, CancellationToken ct = default)
     {
         var result = await departmentDomainService.RemoveEmployeeAsync(command.EmployeeId, command.DepartmentId, ct);
 

@@ -32,7 +32,8 @@ internal sealed class AuthService(
             userType: userType,
             email: request.Email,
             firstName: request.FirstName,
-            lastName: request.LastName
+            lastName: request.LastName,
+            phoneNumber: request.PhoneNumber
         );
 
         var result = await userManager.CreateAsync(user, request.Password);
