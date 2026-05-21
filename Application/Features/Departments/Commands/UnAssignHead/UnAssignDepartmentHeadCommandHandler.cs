@@ -1,10 +1,20 @@
 ﻿namespace Application.Features.Departments.Commands.UnAssignHead;
+public sealed record UnAssignDepartmentHeadCommand(Guid Id) : ICommand;
+internal sealed class UnAssignDepartmentHeadCommandValidator : AbstractValidator<UnAssignDepartmentHeadCommand>
+{
+    public UnAssignDepartmentHeadCommandValidator()
+    {
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("Department ID is required.")
+            .Must(id => id != Guid.Empty).WithMessage("Department ID cannot be an empty GUID.");
+    }
+}
 internal sealed class UnAssignDepartmentHeadCommandHandler(
     IDepartmentRepository repo,
     IAuditService auditService
-    ) : ICommandHandler<DepartmentCommand>
+    ) : ICommandHandler<UnAssignDepartmentHeadCommand>
 {
-    public async Task<Result> HandleAsync(DepartmentCommand command, CancellationToken ct = default)
+    public async Task<Result> HandleAsync(UnAssignDepartmentHeadCommand command, CancellationToken ct = default)
     {
         if (await repo.ExistsAsync(e => e.Id == command.Id, ct: ct))
             return DepartmentErrors.NotFound;

@@ -25,7 +25,7 @@ internal sealed class UserMappingConfig : IRegister
         config.NewConfig<Employee, EmployeeListResponse>()
             .Map(dest => dest.FirstName, src => src.AppUser.FirstName)
             .Map(dest => dest.LastName, src => src.AppUser.LastName)
-            .Map<string, string>(dest => dest.Email, src => src.AppUser.Email)
+            .Map(dest => dest.Email, src => src.AppUser.Email!)
             .Map(dest => dest.IsActive, src => src.AppUser.IsActive);
 
         config.NewConfig<Client, ClientResponse>()
@@ -34,6 +34,5 @@ internal sealed class UserMappingConfig : IRegister
             .Map(dest => dest.Email, src => src.AppUser.Email)
             .Map(dest => dest.UserName, src => src.AppUser.UserName)
             .Map(dest => dest.IsActive, src => src.AppUser.IsActive);
-
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Data;
+using Domain.ReadModels;
 
 namespace Infrastructure.Persistence;
 
@@ -19,6 +20,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<UserPermissionOverride> UserPermissionsOverride { get; set; }
     public DbSet<EmployeeDepartment> EmployeeDepartments { get; set; }
     public DbSet<Client> Clients { get; set; }
+
+    public DbSet<EmployeeProfileView> EmployeeProfiles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

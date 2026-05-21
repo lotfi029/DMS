@@ -1,10 +1,11 @@
-﻿using Application.DTOs.Employees;
-using Application.Features.Employees.Queries.GetAll;
-using Application.Features.Employees.Commands.Create;
-using Application.Features.Employees.Commands.Update;
+﻿using Application.Abstractions.Pagination;
+using Application.DTOs.Employees;
 using Application.Features.Employees.Commands.Active;
-using Application.Features.Employees.Queries.GetById;
+using Application.Features.Employees.Commands.Create;
 using Application.Features.Employees.Commands.Deactivate;
+using Application.Features.Employees.Commands.Update;
+using Application.Features.Employees.Queries.GetAll;
+using Application.Features.Employees.Queries.GetById;
 using Application.Features.Employees.Queries.GetByRoleId;
 
 namespace API.Endpoints;
@@ -48,11 +49,11 @@ internal sealed class EmployeeEndpoints : IEndpoint
 
         group.MapGet("/get-all", GetAllAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Employees.Read))
-            .Produces<IEnumerable<EmployeeListResponse>>(StatusCodes.Status200OK);
+            .Produces<PagedResult<EmployeeListResponse>>(StatusCodes.Status200OK);
 
         group.MapGet("/by-role/{roleId:guid}", GetByRoleAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Employees.Read))
-            .Produces<IEnumerable<EmployeeListResponse>>(StatusCodes.Status200OK);
+            .Produces<PagedResult<EmployeeListResponse>>(StatusCodes.Status200OK);
     }
 
     private async Task<IResult> CreateAsync(
@@ -145,7 +146,7 @@ internal sealed class EmployeeEndpoints : IEndpoint
     }
     private async Task<IResult> GetAllAsync(
         [AsParameters] EmployeeQueryRequest queryRequest,
-        [FromServices] IQueryHandler<GetAllEmployeeQuery, IEnumerable<EmployeeListResponse>> handler,
+        [FromServices] IQueryHandler<GetAllEmployeeQuery, PagedResult<EmployeeListResponse>> handler,
         CancellationToken ct
         )
     {
@@ -159,11 +160,13 @@ internal sealed class EmployeeEndpoints : IEndpoint
     }
     private async Task<IResult> GetByRoleAsync(
         [FromRoute] string roleId,
-        [FromServices] IQueryHandler<GetEmployeeGetByRoleIdQuery, IEnumerable<EmployeeListResponse>> handler,
+        [FromQuery] int pageNumber,
+        [FromQuery] int pageSize,
+        [FromServices] IQueryHandler<GetEmployeeGetByRoleIdQuery, PagedResult<EmployeeListResponse>> handler,
         CancellationToken ct
         )
     {
-        var command = new GetEmployeeGetByRoleIdQuery(roleId);
+        var command = new GetEmployeeGetByRoleIdQuery(roleId, pageNumber, pageSize);
         
         var result = await handler.HandleAsync(command, ct);
 

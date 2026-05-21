@@ -4,8 +4,6 @@ public class Department : Entity, IAuditable
 {
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
-    public bool IsActive { get; private set; } = true;
-    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public Guid? DepartmentHeadId { get; private set; }
     public Employee? DepartmentHead { get; private set; }
     public ICollection<EmployeeDepartment> EmployeeDepartments { get; set; } = [];
@@ -17,8 +15,7 @@ public class Department : Entity, IAuditable
         return new Department
         {
             Name = name,
-            Description = description,
-            CreatedAt = DateTime.UtcNow
+            Description = description
         };
     }
 
@@ -33,8 +30,4 @@ public class Department : Entity, IAuditable
     }
 
     public void RemoveHead() => DepartmentHeadId = null;
-
-
-    public void Deactivate() => IsActive = false;
-    public void Activate() => IsActive = true;
 }

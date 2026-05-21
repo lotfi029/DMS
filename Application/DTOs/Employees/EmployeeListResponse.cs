@@ -9,5 +9,6 @@ public sealed record EmployeeListResponse(
     string Email,
     string JobTitle,
     bool IsActive,
-    IEnumerable<DepartmentFromEmployeeResponse> Departments
+    IEnumerable<DepartmentFromEmployeeResponse> Departments,
+    IEnumerable<RoleForEmployeeResponse> Roles
 );

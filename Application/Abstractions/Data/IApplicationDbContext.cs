@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Domain.ReadModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Abstractions.Data;
@@ -11,5 +12,6 @@ public interface IApplicationDbContext
     DbSet<ApplicationUser> Users { get; }
     DbSet<ApplicationRole> Roles { get; }
     DbSet<IdentityUserRole<string>> UserRoles { get; }
+    DbSet<EmployeeProfileView> EmployeeProfiles { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

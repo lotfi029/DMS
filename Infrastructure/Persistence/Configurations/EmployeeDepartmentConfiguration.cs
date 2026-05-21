@@ -22,4 +22,3 @@ internal class EmployeeDepartmentConfiguration : IEntityTypeConfiguration<Employ
 
     }
 }
-

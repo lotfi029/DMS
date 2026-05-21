@@ -6,14 +6,11 @@ public sealed class Client : Entity, IAuditable
     public ApplicationUser AppUser { get; set; } = default!;
     public string Address { get; set; } = string.Empty;
     public string? Notes { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime LastModifiedAt { get; set; } = DateTime.UtcNow;
-    public bool IsActive { get; set; } = true;
     private Client() { }
     private Client(
         string userId,
         string address,
-        string? notes = null)
+        string? notes = null) : base()
     {
         AppUserId = userId;
         Address = address;

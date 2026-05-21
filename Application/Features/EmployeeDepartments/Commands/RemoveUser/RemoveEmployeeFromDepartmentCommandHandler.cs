@@ -1,10 +1,28 @@
 ﻿namespace Application.Features.EmployeeDepartments.Commands.RemoveUser;
+
+public sealed record RemoveEmployeeFromDepartmentCommand(
+    Guid DepartmentId,
+    Guid EmployeeId
+    ) : ICommand;
+
+internal sealed class RemoveEmployeeFromDepartmentCommandValidator : AbstractValidator<RemoveEmployeeFromDepartmentCommand>
+{
+    public RemoveEmployeeFromDepartmentCommandValidator()
+    {
+        RuleFor(x => x.DepartmentId)
+            .NotEmpty().WithMessage("Department ID is required.");
+        RuleFor(x => x.EmployeeId)
+            .NotEmpty().WithMessage("Employee ID is required.");
+    }
+}
+
+
 internal sealed class RemoveEmployeeFromDepartmentCommandHandler(
     IDepartmentDomainService departmentDomainService,
     IAuditService auditService,
-    ILogger<RemoveEmployeeFromDepartmentCommandHandler> logger) : ICommandHandler<EmployeeDepartmentCommand>
+    ILogger<RemoveEmployeeFromDepartmentCommandHandler> logger) : ICommandHandler<RemoveEmployeeFromDepartmentCommand>
 {
-    public async Task<Result> HandleAsync(EmployeeDepartmentCommand command, CancellationToken ct = default)
+    public async Task<Result> HandleAsync(RemoveEmployeeFromDepartmentCommand command, CancellationToken ct = default)
     {
         var result = await departmentDomainService.RemoveEmployeeAsync(command.EmployeeId, command.DepartmentId, ct);
 

@@ -2,6 +2,7 @@
 
 public sealed record ClientResponse(
     Guid Id,
+    string AppUserId,
     string FirstName,
     string LastName,
     string Email,

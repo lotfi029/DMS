@@ -1,11 +1,28 @@
 ﻿namespace Application.Features.EmployeeDepartments.Commands.MoveUser;
 
+public sealed record MoveEmployeeToDepartmentCommand(
+    Guid DepartmentId,
+    Guid EmployeeId
+    ) : ICommand;
+
+internal sealed class MoveEmployeeToDepartmentCommandValidator : AbstractValidator<MoveEmployeeToDepartmentCommand>
+{
+    public MoveEmployeeToDepartmentCommandValidator()
+    {
+        RuleFor(x => x.DepartmentId)
+            .NotEmpty().WithMessage("Department ID is required.");
+        RuleFor(x => x.EmployeeId)
+            .NotEmpty().WithMessage("Employee ID is required.");
+    }
+}
+
+
 internal sealed class MoveEmployeeToDepartmentCommandHandler(
     IDepartmentDomainService departmentDomainService,
     IAuditService auditService,
-    ILogger<MoveEmployeeToDepartmentCommandHandler> logger) : ICommandHandler<EmployeeDepartmentCommand>
+    ILogger<MoveEmployeeToDepartmentCommandHandler> logger) : ICommandHandler<MoveEmployeeToDepartmentCommand>
 {
-    public async Task<Result> HandleAsync(EmployeeDepartmentCommand command, CancellationToken ct = default)
+    public async Task<Result> HandleAsync(MoveEmployeeToDepartmentCommand command, CancellationToken ct = default)
     {
         var result = await departmentDomainService.MoveEmployeeAsync(command.EmployeeId, command.DepartmentId, ct);
 

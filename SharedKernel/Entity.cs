@@ -5,10 +5,14 @@ public abstract class Entity
     private readonly List<IDomainEvent> _domainEvents = [];
 
     public Guid Id { get; private init; }
-
+    public bool IsActive { get; private set; }
+    public DateTime CreatedAt { get; private init; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; private set; }
     protected Entity()
     {
         Id = Guid.CreateVersion7();
+        CreatedAt = DateTime.UtcNow;
+        IsActive = true;
     }
 
     protected Entity(Guid id)
@@ -17,6 +21,8 @@ public abstract class Entity
             throw new ArgumentException("Entity Id cannot be empty.", nameof(id));
 
         Id = id;
+        CreatedAt = DateTime.UtcNow;
+        IsActive = true;
     }
 
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();

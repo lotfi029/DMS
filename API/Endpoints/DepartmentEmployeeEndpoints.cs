@@ -1,7 +1,9 @@
-using Application.DTOs.Departments;
+using Application.Abstractions.Pagination;
 using Application.DTOs.Employees;
-using Application.Features.Departments.Queries.GetEmployees;
-using Application.Features.EmployeeDepartments.Commands;
+using Application.Features.EmployeeDepartments.Commands.AddEmployee;
+using Application.Features.EmployeeDepartments.Commands.MoveUser;
+using Application.Features.EmployeeDepartments.Commands.RemoveUser;
+using Application.Features.EmployeeDepartments.Queries.GetEmployees;
 
 namespace API.Endpoints;
 
@@ -34,11 +36,11 @@ internal sealed class DepartmentEmployeeEndpoints : IEndpoint
 
     private async Task<IResult> AddUserAsync(
         [FromRoute] Guid id,
-        [FromBody] DepartmentEmployeeRequest request,
-        [FromServices] ICommandHandler<EmployeeDepartmentCommand> handler,
+        [FromBody] AddEmployeeToDepartmentCommand request,
+        [FromServices] ICommandHandler<AddEmployeeToDepartmentCommand> handler,
         CancellationToken ct)
     {
-        var command = new EmployeeDepartmentCommand(request.EmployeeId, id);
+        var command = new AddEmployeeToDepartmentCommand(id, request.EmployeeId);
         var result = await handler.HandleAsync(command, ct);
 
         return result.IsSuccess
@@ -47,11 +49,11 @@ internal sealed class DepartmentEmployeeEndpoints : IEndpoint
     }
     private async Task<IResult> RemoveUserAsync(
         [FromRoute] Guid id,
-        [FromBody] DepartmentEmployeeRequest request,
-        [FromServices] ICommandHandler<EmployeeDepartmentCommand> handler,
+        [FromBody] RemoveEmployeeFromDepartmentCommand request,
+        [FromServices] ICommandHandler<RemoveEmployeeFromDepartmentCommand> handler,
         CancellationToken ct)
     {
-        var command = new EmployeeDepartmentCommand(request.EmployeeId, id);
+        var command = new RemoveEmployeeFromDepartmentCommand(id, request.EmployeeId);
         var result = await handler.HandleAsync(command, ct);
 
         return result.IsSuccess
@@ -60,11 +62,11 @@ internal sealed class DepartmentEmployeeEndpoints : IEndpoint
     }
     private async Task<IResult> MoveUserAsync(
         [FromRoute] Guid id,
-        [FromBody] DepartmentEmployeeRequest request,
-        [FromServices] ICommandHandler<EmployeeDepartmentCommand> handler,
+        [FromBody] MoveEmployeeToDepartmentCommand request,
+        [FromServices] ICommandHandler<MoveEmployeeToDepartmentCommand> handler,
         CancellationToken ct)
     {
-        var command = new EmployeeDepartmentCommand(request.EmployeeId, id);
+        var command = new MoveEmployeeToDepartmentCommand(id, request.EmployeeId);
         var result = await handler.HandleAsync(command, ct);
 
         return result.IsSuccess
@@ -74,10 +76,12 @@ internal sealed class DepartmentEmployeeEndpoints : IEndpoint
 
     private async Task<IResult> GetEmployeesAsync(
         [FromRoute] Guid id,
-        [FromServices] IQueryHandler<GetDepartmentEmployeesQuery, List<EmployeeListResponse>> handler,
+        [FromQuery] int pagedNumber,
+        [FromQuery] int pageSize,
+        [FromServices] IQueryHandler<GetDepartmentEmployeesQuery, PagedResult<EmployeeListResponse>> handler,
         CancellationToken ct)
     {
-        var query = new GetDepartmentEmployeesQuery(id);
+        var query = new GetDepartmentEmployeesQuery(id, pagedNumber, pageSize);
         var result = await handler.HandleAsync(query, ct);
         return result.IsSuccess
             ? Results.Ok(result.Value)

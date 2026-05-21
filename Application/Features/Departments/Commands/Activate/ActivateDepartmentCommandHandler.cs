@@ -1,12 +1,14 @@
 ﻿namespace Application.Features.Departments.Commands.Activate;
 
+public sealed record ActiveDepartmentCommand(Guid Id) : ICommand;
+
 internal sealed class ActivateDepartmentCommandHandler(
     IDepartmentDomainService departmentService,
     IAuditService auditService,
     ILogger<ActivateDepartmentCommandHandler> logger
-    ) : ICommandHandler<DepartmentCommand>
+    ) : ICommandHandler<ActiveDepartmentCommand>
 {
-    public async Task<Result> HandleAsync(DepartmentCommand command, CancellationToken ct = default)
+    public async Task<Result> HandleAsync(ActiveDepartmentCommand command, CancellationToken ct = default)
     {
         if (await departmentService.ActivateAsync(command.Id, ct) is { IsFailure: true} result)
         {

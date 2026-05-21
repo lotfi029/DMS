@@ -1,90 +1,97 @@
 ﻿using Application.Abstractions.Data;
+using Application.Abstractions.Pagination;
 using Application.DTOs.Employees;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.Employees.Queries.GetAll;
 
 public sealed record GetAllEmployeeQuery(
-    EmployeeQueryRequest Request) : IQuery<IEnumerable<EmployeeListResponse>>;
+    EmployeeQueryRequest Request) : IQuery<PagedResult<EmployeeListResponse>>;
 
 internal sealed class GetAllEmployeeQueryHandler(
     IApplicationDbContext dbContext,
-    IAuditService auditService) : IQueryHandler<GetAllEmployeeQuery, IEnumerable<EmployeeListResponse>>
+    IAuditService auditService) : IQueryHandler<GetAllEmployeeQuery, PagedResult<EmployeeListResponse>>
 {
-    public async Task<Result<IEnumerable<EmployeeListResponse>>> HandleAsync(GetAllEmployeeQuery query, CancellationToken ct = default)
+    public async Task<Result<PagedResult<EmployeeListResponse>>> HandleAsync(GetAllEmployeeQuery query, CancellationToken ct = default)
     {
-        var q = from e in dbContext.Employees.AsNoTracking()
-                    join u in dbContext.Users.AsNoTracking() on e.AppUserId equals u.Id
-
-                    from ed in dbContext.EmployeeDepartments.AsNoTracking()
-                        .Where(ed => ed.EmployeeId == e.Id)
-                        .DefaultIfEmpty()
-                    from d in dbContext.Departments.AsNoTracking()
-                        .Where(d => ed.DepartmentId == d.Id)
-                        .DefaultIfEmpty()
-                    select new { Employee = e, User = u, Department = d };
+        var q = dbContext.EmployeeProfiles.AsNoTracking();
 
         if (!string.IsNullOrEmpty(query.Request.JobTitle))
-            q = q.Where(x => x.Employee.JobTitle.Contains(query.Request.JobTitle));
+            q = q.Where(x => x.JobTitle.Contains(query.Request.JobTitle));
 
         if (query.Request.RoleIds != null && query.Request.RoleIds.Any())
-            q = q.Where(x => dbContext.UserRoles.Any(ur => ur.UserId == x.User.Id && query.Request.RoleIds.Contains(ur.RoleId)));
+            q = q.Where(x => dbContext.UserRoles.Any(ur => ur.UserId == x.UserId && query.Request.RoleIds.Contains(ur.RoleId)));
 
         if (query.Request.DepartmentIds != null && query.Request.DepartmentIds.Any())
-            q = q.Where(x => query.Request.DepartmentIds.Contains(x.Department.Id));
+            q = q.Where(x => query.Request.DepartmentIds.Contains(x.DepartmentId ?? Guid.Empty));
 
         if (query.Request.IsActive.HasValue)
-            q = q.Where(x => x.User.IsActive == query.Request.IsActive.Value);
+            q = q.Where(x => x.EmployeeIsActive == query.Request.IsActive.Value);
 
         if (query.Request.HireDateMin.HasValue)
-            q = q.Where(x => x.Employee.HireDate >= query.Request.HireDateMin.Value);
+            q = q.Where(x => x.HireDate >= query.Request.HireDateMin.Value);
 
         if (query.Request.HireDateMax.HasValue)
-            q = q.Where(x => x.Employee.HireDate <= query.Request.HireDateMax.Value);
+            q = q.Where(x => x.HireDate <= query.Request.HireDateMax.Value);
 
         if (query.Request.LastLoginDateMin.HasValue)
-            q = q.Where(x => x.User.LastLoginAt >= query.Request.LastLoginDateMin.Value);
+            q = q.Where(x => x.LastLoginAt >= query.Request.LastLoginDateMin.Value);
 
         if (query.Request.LastLoginDateMax.HasValue)
-            q = q.Where(x => x.User.LastLoginAt <= query.Request.LastLoginDateMax.Value);
+            q = q.Where(x => x.LastLoginAt <= query.Request.LastLoginDateMax.Value);
 
         if (query.Request.CreatedAtMin.HasValue)
-            q = q.Where(x => x.User.CreatedAt >= query.Request.CreatedAtMin.Value);
+            q = q.Where(x => x.CreatedAt >= query.Request.CreatedAtMin.Value);
 
         if (query.Request.CreatedAtMax.HasValue)
-            q = q.Where(x => x.User.CreatedAt <= query.Request.CreatedAtMax.Value);
+            q = q.Where(x => x.CreatedAt <= query.Request.CreatedAtMax.Value);
 
-        if (query.Request.UserType.HasValue)
-            q = q.Where(x => x.User.UserType == query.Request.UserType.Value);
 
-        var result = await q
-            .OrderBy(x => x.User.FirstName)
-            .ThenBy(x => x.User.LastName)
+        var data = await q
+            .OrderBy(x => x.FirstName)
+            .ThenBy(x => x.LastName)
             .ToListAsync(ct);
 
-        var response = result
-            .GroupBy(x => x.Employee.Id)
-            .Select(g =>
+        var items = data
+            .GroupBy(e => new
             {
-                var first = g.First();
-                return new EmployeeListResponse (
-                    first.Employee.Id,
-                    first.User.Id,
-                    first.User.FirstName,
-                    first.User.LastName,
-                    $"{first.User.FirstName} {first.User.LastName}",
-                    first.User.Email!,
-                    first.Employee.JobTitle,
-                    first.User.IsActive,
-                    [.. g.Where(x => x.Department != null)
-                        .Select(x => new DepartmentFromEmployeeResponse(
-                            x.Department.Id,
-                            x.Department.Name
-                        ))]
-
-                );
+                e.EmployeeId,
+                e.UserId,
+                e.FirstName,
+                e.LastName,
+                e.Email,
+                e.JobTitle,
+                e.EmployeeIsActive
             })
+            .Select(g => new EmployeeListResponse(
+                g.Key.EmployeeId,
+                g.Key.UserId,
+                g.Key.FirstName,
+                g.Key.LastName,
+                FullName: $"{g.Key.FirstName} {g.Key.LastName}",
+                g.Key.Email,
+                g.Key.JobTitle,
+                g.Key.EmployeeIsActive,
+
+                [.. g.Where(x => x.DepartmentId != null)
+                 .Select(x => new DepartmentFromEmployeeResponse(
+                     x.DepartmentId!.Value,
+                     x.DepartmentName!
+                 ))
+                 .Distinct()],
+
+                [.. g.Where(x => x.UserRoleId != null)
+                 .Select(x => new RoleForEmployeeResponse(
+                     x.UserRoleId!,
+                     x.RoleName!
+                 ))
+                 .Distinct()]
+            ))
+            .Skip(query.Request.PageSize * (query.Request.Page - 1))
+            .Take(query.Request.PageSize)
             .ToList();
+
+        var totalCount = items.Count;
 
         await auditService.LogActionAsync(
             action: AuditAction.EmployeeListed,
@@ -94,6 +101,7 @@ internal sealed class GetAllEmployeeQueryHandler(
             ct: ct
             );
 
-        return response;
+        return new PagedResult<EmployeeListResponse>(
+            items, query.Request.Page, totalCount, query.Request.PageSize);
     }
 }

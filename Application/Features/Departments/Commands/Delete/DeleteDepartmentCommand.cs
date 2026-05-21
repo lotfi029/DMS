@@ -1,10 +1,21 @@
 namespace Application.Features.Departments.Commands.Delete;
+
+public sealed record DeleteDepartmentCommand(Guid Id) : ICommand;
+internal sealed class DeleteDepartmentCommandValidator : AbstractValidator<DeleteDepartmentCommand>
+{
+    public DeleteDepartmentCommandValidator()
+    {
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("Department ID is required.")
+            .Must(id => id != Guid.Empty).WithMessage("Department ID cannot be an empty GUID.");
+    }
+}
 internal sealed class DeleteDepartmentCommandHandler(
     IDepartmentDomainService domainService,
     IAuditService auditService,
-    ILogger<DeleteDepartmentCommandHandler> logger) : ICommandHandler<DepartmentCommand>
+    ILogger<DeleteDepartmentCommandHandler> logger) : ICommandHandler<DeleteDepartmentCommand>
 {
-    public async Task<Result> HandleAsync(DepartmentCommand command, CancellationToken ct = default)
+    public async Task<Result> HandleAsync(DeleteDepartmentCommand command, CancellationToken ct = default)
     {
         var result = await domainService.DeleteAsync(command.Id, ct);
 

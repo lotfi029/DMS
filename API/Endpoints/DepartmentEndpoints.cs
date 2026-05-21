@@ -1,10 +1,15 @@
 using Application.DTOs.Departments;
-using Application.Features.Departments.Commands;
+using Application.Features.Departments.Commands.Activate;
 using Application.Features.Departments.Commands.AssignHead;
 using Application.Features.Departments.Commands.Create;
+using Application.Features.Departments.Commands.Deactivate;
+using Application.Features.Departments.Commands.Delete;
+using Application.Features.Departments.Commands.UnAssignHead;
 using Application.Features.Departments.Commands.Update;
 using Application.Features.Departments.Queries.Get;
 using Application.Features.Departments.Queries.GetAll;
+using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API.Endpoints;
 
@@ -29,8 +34,12 @@ internal sealed class DepartmentEndpoints : IEndpoint
         group.MapPut("/{id:guid}/unassign-head", UnAssignHeadAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Departments.UnassignDepartmentHead))
             .Produces(StatusCodes.Status204NoContent);
-
-
+        group.MapPut("/{id:guid}/activate", ActiveAsync)
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Departments.Update))
+            .Produces(StatusCodes.Status204NoContent);
+        group.MapPut("/{id:guid}/deactivate", InActiveAsync)
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Departments.Update))
+            .Produces(StatusCodes.Status204NoContent);
         group.MapPut("/{id:guid}/update", UpdateAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Departments.Update))
             .Produces(StatusCodes.Status204NoContent);
@@ -75,10 +84,10 @@ internal sealed class DepartmentEndpoints : IEndpoint
     }
     private async Task<IResult> UnAssignHeadAsync(
         [FromRoute] Guid id,
-        [FromServices] ICommandHandler<DepartmentCommand> handler,
+        [FromServices] ICommandHandler<UnAssignDepartmentHeadCommand> handler,
         CancellationToken ct)
     {
-        var command = new DepartmentCommand(id);
+        var command = new UnAssignDepartmentHeadCommand(id);
         var result = await handler.HandleAsync(command, ct);
 
         return result.IsSuccess
@@ -98,13 +107,35 @@ internal sealed class DepartmentEndpoints : IEndpoint
             ? Results.NoContent()
             : result.ToProblem();
     }
-
-    private async Task<IResult> DeleteAsync(
+    private async Task<IResult> ActiveAsync(
         [FromRoute] Guid id,
-        [FromServices] ICommandHandler<DepartmentCommand> handler,
+        [FromServices] ICommandHandler<ActiveDepartmentCommand> handler,
         CancellationToken ct)
     {
-        var command = new DepartmentCommand(id);
+        var command = new ActiveDepartmentCommand(id);
+        var result = await handler.HandleAsync(command, ct);
+        return result.IsSuccess
+            ? Results.NoContent()
+            : result.ToProblem();
+    }
+    private async Task<IResult> InActiveAsync(
+        [FromRoute] Guid id,
+        [FromQuery] Guid? newDepartmentId,
+        [FromServices] ICommandHandler<DeactivateDepartmentCommand> handler,
+        CancellationToken ct)
+    {
+        var command = new DeactivateDepartmentCommand(id, newDepartmentId);
+        var result = await handler.HandleAsync(command, ct);
+        return result.IsSuccess
+            ? Results.NoContent()
+            : result.ToProblem();
+    }
+    private async Task<IResult> DeleteAsync(
+        [FromRoute] Guid id,
+        [FromServices] ICommandHandler<DeleteDepartmentCommand> handler,
+        CancellationToken ct)
+    {
+        var command = new DeleteDepartmentCommand(id);
         var result = await handler.HandleAsync(command, ct);
         return result.IsSuccess 
             ? Results.Ok() 

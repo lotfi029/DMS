@@ -8,7 +8,6 @@ public sealed class UserPermissionOverride : Entity, IAuditable
     public string? Reason { get; private set; }
     public bool IsGranted { get; private set; }
     public string GrantedById { get; private set; } = string.Empty;
-    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime? ExpiresAt { get; private set; }
     private UserPermissionOverride() { }
 
@@ -26,8 +25,7 @@ public sealed class UserPermissionOverride : Entity, IAuditable
             GrantedById = grantedById,
             IsGranted = true,
             Reason = reason,
-            ExpiresAt = expiresAt,
-            CreatedAt = DateTime.UtcNow
+            ExpiresAt = expiresAt
         };
     }
     public static UserPermissionOverride Deny(
@@ -45,12 +43,9 @@ public sealed class UserPermissionOverride : Entity, IAuditable
             GrantedById = grantedById,
             Reason = reason,
             ExpiresAt = expiresAt,
-            CreatedAt = DateTime.UtcNow
         };
     }
 
     public bool IsExpired =>
         ExpiresAt.HasValue && DateTime.UtcNow > ExpiresAt.Value;
-
-    public bool IsActive => !IsExpired;
 }

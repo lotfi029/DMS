@@ -22,12 +22,14 @@ public interface IGenericRepository<T> where T : class
         string[]? filtersKeys = null, 
         CancellationToken ct = default);
     void Add(T entity);
+    void Add(IEnumerable<T> entities);
     void Update(T entity);
+    void Remove(T entity);
+
     Task<int> ExecuteDeleteAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default);
     Task<int> ExecuteUpdateAsync(Expression<Func<T, bool>> predicate, Action<UpdateSettersBuilder<T>> setPropertyCalls, CancellationToken ct = default);
     Task<bool> ExistsAsync(
         Expression<Func<T, bool>> predicate,
         string[]? filtersKeys = null,
         CancellationToken ct = default);
-    void Add(IEnumerable<T> entities);
 }

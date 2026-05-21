@@ -3,7 +3,6 @@
 public sealed class Employee : Entity, IAuditable
 {
     public string JobTitle { get; private set; } = string.Empty;
-    public bool IsActive { get; private set; } = true;
     public DateOnly HireDate { get; private set; }
     public DateOnly? EndDate { get; private set; } // will replace with contract (entity will added).
     public string? Notes { get; private set; }
@@ -15,7 +14,6 @@ public sealed class Employee : Entity, IAuditable
     public string AppUserId { get; private set; } = string.Empty;
     public ApplicationUser AppUser { get; private set; } = default!;
     public ICollection<EmployeeDepartment> EmployeeDepartments { get; private set; } = [];
-    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime? LastModifiedAt { get; private set; }
 
     private Employee() { }
@@ -41,7 +39,6 @@ public sealed class Employee : Entity, IAuditable
         EmergencyContactName = emergencyName;
         EmergencyContactPhone = emergencyPhone;
         AppUserId = appUserId;
-        IsActive = true;
     }
 
     public static Employee Create(
@@ -85,6 +82,4 @@ public sealed class Employee : Entity, IAuditable
 
         LastModifiedAt = DateTime.UtcNow;
     }
-    public void Deactivate() { IsActive = false; LastModifiedAt = DateTime.UtcNow; }
-    public void Activate() { IsActive = true; LastModifiedAt = DateTime.UtcNow; }
 }

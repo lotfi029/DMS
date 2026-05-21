@@ -72,6 +72,19 @@ public static class LogMessages
     public const string Dept_UserMoved = "User {UserId} moved to department {DepartmentId}";
     public const string Dept_AllUsersMoved = "All users moved from department {FromDepartmentId} to department {ToDepartmentId}";
 
+    // ── Clients ───────────────────────────────────────────────────────────
+    public const string Client_Created = "Client {ClientId} created for user {UserId}";
+    public const string Client_CreateFailed = "Failed to create client {ClientId}. Error: {ErrorDescription}";
+    public const string Client_Updated = "Client {ClientId} updated";
+    public const string Client_UpdateFailed = "Failed to update client {ClientId}. Error: {ErrorDescription}";
+    public const string Client_Deleted = "Client {ClientId} deleted";
+    public const string Client_DeleteFailed = "Failed to delete client {ClientId}. Error: {ErrorDescription}";
+    public const string Client_NotFound = "Client {ClientId} not found";
+    public const string Client_Activated = "Client {ClientId} activated";
+    public const string Client_ActivatedFailed = "Failed to activate client {ClientId}. Error: {ErrorDescription}";
+    public const string Client_Deactivated = "Client {ClientId} deactivated";
+    public const string Client_DeactivatedFailed = "Failed to deactivate client {ClientId}. Error: {ErrorDescription}";
+
     // ── Projects ─────────────────────────────────────────────────────────
     public const string Project_Created = "Project {ProjectCode} created for client {ClientName}";
     public const string Project_Updated = "Project {ProjectId} updated";

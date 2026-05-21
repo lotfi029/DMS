@@ -15,7 +15,8 @@ internal sealed class CreateClientCommandHandler(
     IUnitOfWork unitOfWork,
     IAuditService auditService,
     IAuthService authService,
-    IClientRepository clientRepository
+    IClientRepository clientRepository,
+    ILogger<CreateClientCommandHandler> logger
     ) : ICommandHandler<CreateClientCommand, Guid>
 {
     public async Task<Result<Guid>> HandleAsync(CreateClientCommand command, CancellationToken ct = default)
@@ -40,6 +41,7 @@ internal sealed class CreateClientCommandHandler(
             if (registerResult.IsFailure)
             {
                 await transaction.RollbackAsync(ct);
+                logger.LogError(LogMessages.Client_CreateFailed, command.Email, registerResult.ToString());
                 return registerResult.Error;
             }
 
@@ -51,6 +53,8 @@ internal sealed class CreateClientCommandHandler(
 
             clientRepository.Add(client);
             await unitOfWork.SaveChangesAsync(ct);
+
+            logger.LogInformation(LogMessages.Client_Created, client.Id, command.Email);
 
             await auditService.LogActionAsync(
                 action: AuditAction.ClientCreated,
@@ -67,8 +71,8 @@ internal sealed class CreateClientCommandHandler(
         catch
         {
             await transaction.RollbackAsync(ct);
-            throw;
 
+            return ClientErrors.CreatedFailed;
         }
     }
 }

@@ -11,10 +11,20 @@ internal sealed class GetClientByIdQueryHandler(
 {
     public async Task<Result<ClientResponse>> HandleAsync(GetClientByIdQuery query, CancellationToken ct = default)
     {
-        if (await repo.GetByIdAsync(c => c.Id == query.Id, include: [nameof(Client.AppUser)], ct: ct) is not { } entity)
+        if (await repo.GetByIdAsync(c => c.Id == query.Id, include: [nameof(Client.AppUser)],filtersKeys: null, ct: ct) is not { } entity)
             return ClientErrors.NotFound;
 
-        var reponse = entity.Adapt<ClientResponse>();
+        var response = new ClientResponse(
+            entity.Id,
+            entity.AppUserId,
+            entity.AppUser?.FirstName!,
+            entity.AppUser?.LastName!,
+            entity.AppUser?.Email!,
+            entity.AppUser?.UserName!,
+            entity.AppUser?.IsActive ?? true,
+            entity.AppUser?.PhoneNumber,
+            entity.Address,
+            entity.Notes);
 
         await auditService.LogActionAsync(
             action: AuditAction.ClientViewed,
@@ -22,6 +32,6 @@ internal sealed class GetClientByIdQueryHandler(
             entityName: AuditEntityNames.Client,
             entityId: entity.Id.ToString(),
             ct: ct);
-        return reponse;
+        return response;
     }
 }

@@ -13,12 +13,11 @@ public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepo
     public async Task<T?> GetByIdAsync(
         Expression<Func<T, bool>> predicate, 
         bool asNoTracking = true,
-        string[]? filtersKeys = null,
         string[]? include = null, 
+        string[]? filtersKeys = null,
         CancellationToken ct = default)
     {
-        var query = DbContext.Set<T>().AsQueryable()
-            .IgnoreAutoIncludes();
+        var query = DbContext.Set<T>().AsQueryable();
 
         if (include != null)
         {
@@ -50,7 +49,7 @@ public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepo
             .IgnoreAutoIncludes();
 
         if (filtersKeys is not null)
-            query.IgnoreQueryFilters(filtersKeys);
+            query.IgnoreQueryFilters(filtersKeys); 
 
         if (asNoTracking)
             query.AsNoTracking();
@@ -96,7 +95,10 @@ public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepo
     {
         DbContext.Set<T>().Update(entity);
     }
-
+    public void Remove(T entity)
+    {
+        DbContext.Set<T>().Remove(entity);
+    }
     public async Task<int> ExecuteDeleteAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default)
     {
         return await DbContext.Set<T>()

@@ -11,6 +11,6 @@ public static class DependancyInjection
     {
         services.AddScoped<IDepartmentDomainService, DepartmentDomainService>();
         services.AddScoped<IEmployeeDomainService, EmployeeDomainService>();
-        services.AddScoped<IUserDomainService, UserDomainService>();
+        services.AddScoped<IClientDomainService, ClientDomainService>();
     }
 }
