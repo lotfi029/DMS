@@ -39,11 +39,11 @@ internal sealed class AuthService(
         var result = await userManager.CreateAsync(user, request.Password);
         
         if (!result.Succeeded)
-            return Error.BadRequest("Auth.Register", string.Join(", ", result.Errors.Select(e => e.Description)));
+            return AuthErrors.InvalidRegister(string.Join(", ", result.Errors.Select(e => e.Description)));
 
         var roleResult = await userManager.AddToRoleAsync(user, role.Name!);
         if (!roleResult.Succeeded)
-            return Error.BadRequest("Auth.Register", string.Join(", ", roleResult.Errors.Select(e => e.Description)));    
+            return AuthErrors.InvalidRegister(string.Join(", ", roleResult.Errors.Select(e => e.Description)));    
 
         return Result.Success(user.Id);
     }
@@ -52,21 +52,21 @@ internal sealed class AuthService(
         var userId = jwtProvider.ValidateToken(request.Token);
 
         if (userId is null)
-            return Error.Unauthorized("Auth.RefreshToken", "Invalid Token");
+            return AuthErrors.InvalidToken;
 
         if (await userManager.FindByIdAsync(userId) is not { } user)
-            return Error.Unauthorized("Auth.RefreshToken", "Invalid User Id");
+            return AuthErrors.InvalidUser;
 
 
         if (!user.IsActive)
-            return Error.Unauthorized(userId, "User Not Active");
+            return AuthErrors.UserNotActive;
 
 
         var userRefreshToken = user.RefreshTokens.SingleOrDefault(e => e.Token == request.RefreshToken && e.IsActive);
 
 
         if (userRefreshToken is null)
-            return Error.Unauthorized("Auth.RefreshToken", "Invalid Refresh Token");
+            return AuthErrors.InvalidRefreshToken;
 
         userRefreshToken.RevokeOn = DateTime.UtcNow;
 
@@ -98,25 +98,25 @@ internal sealed class AuthService(
             await auditService.LogAsync(
                 AuditLog.Login(string.Empty, request.Email, request.Email, _currentContext.IpAddress, false,
                     "Invalid credentials"), ct);
-            return Error.Unauthorized("Auth.Login", "Invalid Credintionals");
+            return AuthErrors.InvalidCredentials;
         }
 
         if (!user.IsActive)
         {
             logger.LogWarning(LogMessages.Auth_LoginFailed, request.Email, "Account inactive");
             await auditService.LogAsync(
-                AuditLog.Login(string.Empty, request.Email, request.Email, _currentContext.IpAddress, false,
+                AuditLog.Login(user.Id, request.Email, request.Email, _currentContext.IpAddress, false,
                     "Invalid credentials"), ct);
-            return Error.Unauthorized("Auth.Login", "User Not Active");
+            return AuthErrors.UserNotActive;
         }
 
         if (!await userManager.CheckPasswordAsync(user, request.Password))
         {
             logger.LogWarning(LogMessages.Auth_LoginFailed, request.Email, "Invalid password");
             await auditService.LogAsync(
-                AuditLog.Login(string.Empty, request.Email, request.Email, _currentContext.IpAddress, false,
+                AuditLog.Login(user.Id, request.Email, request.Email, _currentContext.IpAddress, false,
                     "Invalid credentials"), ct);
-            return Error.Unauthorized("Auth.Login", "Invalid Credintionals");
+            return AuthErrors.InvalidCredentials;
         }
 
         var roles = await userManager.GetRolesAsync(user);
@@ -153,17 +153,17 @@ internal sealed class AuthService(
         var userId = jwtProvider.ValidateToken(request.Token);
 
         if (userId is null)
-            return Error.BadRequest("Auth.RevokeRefreshToken", "Invalid Token");
+            return AuthErrors.InvalidToken;
 
         var user = await userManager.FindByIdAsync(userId);
 
         if (user is null)
-            return Error.BadRequest("Auth.RevokeRefreshToken", "Invalid User Id");
+            return AuthErrors.InvalidUser;
 
         var userRefreshToken = user.RefreshTokens.SingleOrDefault(e => e.Token == request.RefreshToken && e.IsActive);
 
         if (userRefreshToken is null)
-            return Error.BadRequest("Auth.RevokeRefreshToken", "No Refresh Token");
+            return AuthErrors.InvalidRefreshToken;
 
         userRefreshToken.RevokeOn = DateTime.UtcNow;
 

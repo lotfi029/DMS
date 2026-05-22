@@ -59,6 +59,8 @@ public static class LogMessages
     public const string Permission_Assigned = "Permission {Permission} assigned to role {RoleId}";
     public const string Permission_Removed = "Permission {Permission} removed from role {RoleId}";
     public const string Permission_AlreadyAssigned = "Permission {Permission} already assigned to role {RoleId}";
+    public const string Permission_Revoked = "Permission override revoked for user {UserId} and permission {Permission}";
+    public const string Permission_OverrideDenied = "Permission override DENIED: {Permission} → user {UserId} by {CallerId}";
 
     // ── Departments ───────────────────────────────────────────────────────────
     public const string Dept_Creating = "Creating department {DepartmentName}";

@@ -6,6 +6,7 @@ using Application.Features.Roles.Commands.RemoveFromUser;
 using Application.Features.Roles.Queries.GetUserRoles;
 using Application.Features.Roles.Queries.GetAll;
 using Application.DTOs.Roles;
+using Application.Features.Roles.Queries.GetById;
 
 namespace API.Endpoints;
 
@@ -27,12 +28,17 @@ internal sealed class RoleEndpoints : IEndpoint
         group.MapPut("/update", UpdateRoleAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Roles.Update));
 
-        group.MapDelete("/{roleId}", DeleteRoleAsync)
+        group.MapDelete("/{roleId:guid}", DeleteRoleAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Roles.Delete));
 
-        group.MapGet("/user/{userId}", GetUserRolesAsync)
+        group.MapGet("/{roleId:guid}", GetRoleByIdAsync)
+            .Produces<RoleListResponse>()
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Roles.Read));
+        group.MapGet("/user/{userId:guid}", GetUserRolesAsync)
+            .Produces<IEnumerable<RoleListResponse>>()
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Roles.Read));
         group.MapGet("/", GetAllRolesAsync)
+            .Produces<IEnumerable<RoleListResponse>>()
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Roles.Read));
     }
 
@@ -82,9 +88,20 @@ internal sealed class RoleEndpoints : IEndpoint
         return result.IsSuccess ? Results.Ok() : result.ToProblem();
     }
 
+    private async Task<IResult> GetRoleByIdAsync(
+        [FromRoute] string roleId,
+        [FromServices] IQueryHandler<GetRoleByIdQuery, RoleResponse> handler,
+        CancellationToken ct)
+    {
+        var query = new GetRoleByIdQuery(roleId);
+        var result = await handler.HandleAsync(query, ct);
+        return result.IsSuccess 
+            ? Results.Ok(result.Value) 
+            : result.ToProblem();
+    }
     private async Task<IResult> GetUserRolesAsync(
         [FromRoute] string userId,
-        [FromServices] IQueryHandler<GetUserRolesQuery, IEnumerable<RoleResponse>> handler,
+        [FromServices] IQueryHandler<GetUserRolesQuery, IEnumerable<RoleListResponse>> handler,
         CancellationToken ct)
     {
         var query = new GetUserRolesQuery(userId);
@@ -93,7 +110,7 @@ internal sealed class RoleEndpoints : IEndpoint
     }
 
     private async Task<IResult> GetAllRolesAsync(
-        [FromServices] IQueryHandler<GetAllRolesQuery, IEnumerable<RoleResponse>> handler,
+        [FromServices] IQueryHandler<GetAllRolesQuery, IEnumerable<RoleListResponse>> handler,
         CancellationToken ct)
     {
         var query = new GetAllRolesQuery();

@@ -30,10 +30,10 @@ internal sealed class EmployeeEndpoints : IEndpoint
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Employees.Update))
             .Produces(StatusCodes.Status204NoContent);
         
-        group.MapPut("/{id:guid}/deactive", InactivateAsync)
+        group.MapPut("/{id:guid}/active", ActivateAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Employees.Update))
             .Produces(StatusCodes.Status204NoContent);
-        group.MapPut("/{id:guid}/active", ActivateAsync)
+        group.MapPut("/{id:guid}/deactive", InactivateAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Employees.Update))
             .Produces(StatusCodes.Status204NoContent);
 
@@ -46,11 +46,9 @@ internal sealed class EmployeeEndpoints : IEndpoint
             .Produces<EmployeeListResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithName("GetEmployeeById");
-
         group.MapGet("/get-all", GetAllAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Employees.Read))
             .Produces<PagedResult<EmployeeListResponse>>(StatusCodes.Status200OK);
-
         group.MapGet("/by-role/{roleId:guid}", GetByRoleAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Employees.Read))
             .Produces<PagedResult<EmployeeListResponse>>(StatusCodes.Status200OK);
@@ -78,28 +76,13 @@ internal sealed class EmployeeEndpoints : IEndpoint
         )
     {
         var command = new UpdateEmployeeCommand(id, request);
-
         var result = await handler.HandleAsync(command, ct);
-        
         return result.IsSuccess
             ? Results.NoContent()
             : result.ToProblem();
     }
     
-    private async Task<IResult> InactivateAsync(
-        [FromRoute] Guid id,
-        [FromServices] ICommandHandler<DeactivateEmployeeCommand> handler,
-        CancellationToken ct
-        )
-    {
-        var command = new DeactivateEmployeeCommand(id);
 
-        var result = await handler.HandleAsync(command, ct);
-        
-        return result.IsSuccess
-            ? Results.NoContent()
-            : result.ToProblem();
-    }
     private async Task<IResult> ActivateAsync(
         [FromRoute] Guid id,
         [FromServices] ICommandHandler<ActivateEmployeeCommand> handler,
@@ -107,9 +90,19 @@ internal sealed class EmployeeEndpoints : IEndpoint
         )
     {
         var command = new ActivateEmployeeCommand(id);
-
         var result = await handler.HandleAsync(command, ct);
-        
+        return result.IsSuccess
+            ? Results.NoContent()
+            : result.ToProblem();
+    }
+    private async Task<IResult> InactivateAsync(
+        [FromRoute] Guid id,
+        [FromServices] ICommandHandler<DeactivateEmployeeCommand> handler,
+        CancellationToken ct
+        )
+    {
+        var command = new DeactivateEmployeeCommand(id);
+        var result = await handler.HandleAsync(command, ct);
         return result.IsSuccess
             ? Results.NoContent()
             : result.ToProblem();

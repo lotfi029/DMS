@@ -2,7 +2,20 @@ namespace Application.Features.Roles.Commands.Update;
 
 public sealed record UpdateRoleCommand(string RoleId, string NewRoleName) : ICommand;
 
-public sealed class UpdateRoleCommandHandler(
+internal sealed class UpdateRoleCommandValidator : AbstractValidator<UpdateRoleCommand>
+{
+    public UpdateRoleCommandValidator()
+    {
+        RuleFor(x => x.RoleId).NotEmpty().WithMessage("Role ID is required.");
+
+        RuleFor(x => x.NewRoleName)
+            .NotEmpty().WithMessage("Role name is required.")
+            .MaximumLength(256)
+            .Matches(@"^[a-zA-Z0-9_\-]+$");
+    }
+}
+
+internal sealed class UpdateRoleCommandHandler(
     IRoleService service,
     IAuditService auditService,
     ILogger<UpdateRoleCommandHandler> logger) : ICommandHandler<UpdateRoleCommand>

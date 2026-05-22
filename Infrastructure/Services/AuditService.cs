@@ -130,21 +130,23 @@ internal sealed class AuditService(
             TotalPages: (int)Math.Ceiling((double)totalCount / query.PageSize));
     }
 
-    public async Task<IEnumerable<AuditLog>> GetEntityHistoryAsync(
+    public async Task<IEnumerable<AuditLogResponse>> GetEntityHistoryAsync(
         string entityName, string entityId, CancellationToken ct = default) =>
         await dbContext.AuditLogs
             .AsNoTracking()
             .Where(x => x.EntityName == entityName && x.EntityId == entityId)
             .OrderByDescending(x => x.Timestamp)
             .Take(200)
+            .ProjectToType<AuditLogResponse>()
             .ToListAsync(ct);
 
-    public async Task<IEnumerable<AuditLog>> GetUserActivityAsync(
+    public async Task<IEnumerable<AuditLogResponse>> GetUserActivityAsync(
         string userId, int pageSize = 50, CancellationToken ct = default) =>
         await dbContext.AuditLogs
             .AsNoTracking()
             .Where(x => x.UserId == userId)
             .OrderByDescending(x => x.Timestamp)
             .Take(pageSize)
+            .ProjectToType<AuditLogResponse>()
             .ToListAsync(ct);
 }

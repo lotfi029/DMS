@@ -2,7 +2,25 @@ namespace Application.Features.Permissions.Commands.AssignToRole;
 
 public sealed record AssignPermissionToRoleCommand(string RoleId, string Permission) : ICommand;
 
-public sealed class AssignPermissionToRoleCommandHandler(
+internal sealed class AssignPermissionToRoleCommandValidator : AbstractValidator<AssignPermissionToRoleCommand>
+{
+    public AssignPermissionToRoleCommandValidator()
+    {
+        RuleFor(x => x.Permission)
+            .NotEmpty().WithMessage("Permission name is required.")
+            .MaximumLength(100).WithMessage("Permission name must not exceed 100 characters.");
+
+        RuleFor(x => x.RoleId)
+            .NotEmpty().WithMessage("Role ID is required.")
+            .Must(BeAValidGuid).WithMessage("Role ID must be a valid GUID.");
+    }
+
+    private bool BeAValidGuid(string roleId)
+    {
+        return Guid.TryParse(roleId, out _);
+    }
+}
+internal sealed class AssignPermissionToRoleCommandHandler(
     IPermissionService service,
     IAuditService auditService
     ) : ICommandHandler<AssignPermissionToRoleCommand>

@@ -6,23 +6,11 @@ builder.Host.UseSerilog((context, loggerConfig) =>
     loggerConfig.ReadFrom.Configuration(context.Configuration)
     );
 
-
 builder.Services
-    .AddApi()
+    .AddApi(builder.Configuration)
     .AddInfrastructure(builder.Configuration)
     .AddApplication()
     .AddDomain();
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("Policy1",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:4200")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-        });
-});
 
 var app = builder.Build();
 
@@ -31,9 +19,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
+
 app.ApplyMigrations();
 await app.SeedDataAsync();
-app.UseCors("Policy1");
+app.UseCors(Policies.AngularFrontendPolicy);
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseExceptionHandler();

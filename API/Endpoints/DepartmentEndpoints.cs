@@ -1,4 +1,5 @@
 using Application.DTOs.Departments;
+using Application.DTOs.Employees;
 using Application.Features.Departments.Commands.Activate;
 using Application.Features.Departments.Commands.AssignHead;
 using Application.Features.Departments.Commands.Create;
@@ -55,6 +56,10 @@ internal sealed class DepartmentEndpoints : IEndpoint
         group.MapGet("/", GetAllAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Departments.Read))
             .Produces<IEnumerable<DepartmentResponse>>(StatusCodes.Status200OK);
+        group.MapGet("/{id:guid}/head", GetDepartmentHeadAsync)
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Departments.Read))
+            .Produces<EmployeeResponse>()
+            .ProducesProblem(StatusCodes.Status404NotFound);
     }
     
     private async Task<IResult> CreateAsync(
@@ -163,5 +168,14 @@ internal sealed class DepartmentEndpoints : IEndpoint
         return result.IsSuccess 
             ? Results.Ok(result.Value) 
             : result.ToProblem();
+    }
+    private async Task<IResult> GetDepartmentHeadAsync(
+        [FromRoute] Guid id,
+        CancellationToken ct)
+    {
+        // This is a simple example, you can implement it as per your requirements
+        // For example, you can create a query to get the department head details
+        // and return the response accordingly.
+        return Results.Ok();
     }
 }

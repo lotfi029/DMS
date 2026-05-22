@@ -2,7 +2,20 @@ namespace Application.Features.Roles.Commands.RemoveFromUser;
 
 public sealed record RemoveRoleFromUserCommand(string UserId, string RoleId) : ICommand;
 
-public sealed class RemoveRoleFromUserCommandHandler(
+internal sealed class RemoveRoleFromUserCommandValidator : AbstractValidator<RemoveRoleFromUserCommand>
+{
+    public RemoveRoleFromUserCommandValidator()
+    {
+        RuleFor(x => x.UserId)
+            .NotEmpty().WithMessage("User ID is required.")
+            .Must(id => Guid.TryParse(id, out _)).WithMessage("User ID must be a valid GUID.");
+        RuleFor(x => x.RoleId)
+            .NotEmpty().WithMessage("Role ID is required.")
+            .Must(id => Guid.TryParse(id, out _)).WithMessage("Role ID must be a valid GUID.");
+    }
+}
+
+internal sealed class RemoveRoleFromUserCommandHandler(
     IRoleService service,
     IAuditService auditService,
     ILogger<RemoveRoleFromUserCommandHandler> logger) : ICommandHandler<RemoveRoleFromUserCommand>

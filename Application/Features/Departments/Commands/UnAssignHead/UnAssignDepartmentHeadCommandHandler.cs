@@ -16,7 +16,7 @@ internal sealed class UnAssignDepartmentHeadCommandHandler(
 {
     public async Task<Result> HandleAsync(UnAssignDepartmentHeadCommand command, CancellationToken ct = default)
     {
-        if (await repo.ExistsAsync(e => e.Id == command.Id, ct: ct))
+        if (!await repo.ExistsAsync(e => e.Id == command.Id, ct: ct))
             return DepartmentErrors.NotFound;
 
         var unassignResult = await repo.ExecuteUpdateAsync(

@@ -2,7 +2,23 @@ namespace Application.Features.Permissions.Commands.RemoveFromRole;
 
 public sealed record RemovePermissionFromRoleCommand(string RoleId, string Permission) : ICommand;
 
-public sealed class RemovePermissionFromRoleCommandHandler(
+internal sealed class RemovePermissionFromRoleCommandValidator : AbstractValidator<RemovePermissionFromRoleCommand>
+{
+    public RemovePermissionFromRoleCommandValidator()
+    {
+        RuleFor(x => x.Permission)
+            .NotEmpty().WithMessage("Permission name is required.")
+            .MaximumLength(100).WithMessage("Permission name must not exceed 100 characters.");
+        RuleFor(x => x.RoleId)
+            .NotEmpty().WithMessage("Role ID is required.")
+            .Must(BeAValidGuid).WithMessage("Role ID must be a valid GUID.");
+    }
+    private bool BeAValidGuid(string roleId)
+    {
+        return Guid.TryParse(roleId, out _);
+    }
+}
+internal sealed class RemovePermissionFromRoleCommandHandler(
     IPermissionService service,
     IAuditService auditService) : ICommandHandler<RemovePermissionFromRoleCommand>
 {

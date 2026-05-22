@@ -1,12 +1,12 @@
 namespace Application.Features.Roles.Queries.GetAll;
 
-public sealed record GetAllRolesQuery : IQuery<IEnumerable<RoleResponse>>;
+public sealed record GetAllRolesQuery : IQuery<IEnumerable<RoleListResponse>>;
 
 public sealed class GetAllRolesQueryHandler(
     IRoleService service,
-    IAuditService auditService) : IQueryHandler<GetAllRolesQuery, IEnumerable<RoleResponse>>
+    IAuditService auditService) : IQueryHandler<GetAllRolesQuery, IEnumerable<RoleListResponse>>
 {
-    public async Task<Result<IEnumerable<RoleResponse>>> HandleAsync(GetAllRolesQuery query, CancellationToken ct = default)
+    public async Task<Result<IEnumerable<RoleListResponse>>> HandleAsync(GetAllRolesQuery query, CancellationToken ct = default)
     {
         var result = await service.GetAllRolesAsync(ct);
 

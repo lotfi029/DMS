@@ -1,12 +1,12 @@
 namespace Application.Features.Roles.Queries.GetUserRoles;
 
-public sealed record GetUserRolesQuery(string UserId) : IQuery<IEnumerable<RoleResponse>>;
+public sealed record GetUserRolesQuery(string UserId) : IQuery<IEnumerable<RoleListResponse>>;
 
 public sealed class GetUserRolesQueryHandler(
     IRoleService service,
-    IAuditService auditService) : IQueryHandler<GetUserRolesQuery, IEnumerable<RoleResponse>>
+    IAuditService auditService) : IQueryHandler<GetUserRolesQuery, IEnumerable<RoleListResponse>>
 {
-    public async Task<Result<IEnumerable<RoleResponse>>> HandleAsync(GetUserRolesQuery query, CancellationToken ct = default)
+    public async Task<Result<IEnumerable<RoleListResponse>>> HandleAsync(GetUserRolesQuery query, CancellationToken ct = default)
     {
         var result = await service.GetUserRolesAsync(query.UserId, ct);
 

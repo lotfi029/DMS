@@ -2,7 +2,20 @@
 
 public sealed record LoginCommand(LoginRequest Request) : ICommand<AuthResponse>;
 
-public sealed class LoginCommandHandler(
+internal sealed class LoginCommandValidator : AbstractValidator<LoginCommand>
+{
+    public LoginCommandValidator()
+    {
+        RuleFor(l => l.Request.Email)
+            .NotEmpty()
+            .EmailAddress();
+
+        RuleFor(l => l.Request.Password)
+            .NotEmpty();
+    }
+}
+
+internal sealed class LoginCommandHandler(
     ILogger<LoginCommandHandler> logger,
     IAuthService authService) : ICommandHandler<LoginCommand, AuthResponse>
 {

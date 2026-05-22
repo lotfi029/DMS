@@ -27,5 +27,4 @@ public static class EmployeeErrors
         => Error.Conflict(
             $"{_code}.{nameof(ActiveException)}",
             $"Error occure will active employee.");
-
 }

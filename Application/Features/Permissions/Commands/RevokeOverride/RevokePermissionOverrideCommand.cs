@@ -6,6 +6,21 @@ public sealed record RevokePermissionOverrideCommand(
     string CallerUserId
     ) : ICommand;
 
+internal sealed class RevokePermissionOverrideCommandValidator : AbstractValidator<RevokePermissionOverrideCommand>
+{
+    public RevokePermissionOverrideCommandValidator()
+    {
+        RuleFor(x => x.TargetUserId)
+            .NotEmpty().WithMessage("Target user ID is required.");
+
+        RuleFor(x => x.Permission)
+            .NotEmpty().WithMessage("Permission is required.");
+
+        RuleFor(x => x.CallerUserId)
+            .NotEmpty().WithMessage("Caller user ID is required.");
+    }
+}
+
 internal sealed class RevokePermissionOverrideCommandHandler(
     IUserPermissionOverrideRepository repo,
     IAuditService auditService,
@@ -19,12 +34,10 @@ internal sealed class RevokePermissionOverrideCommandHandler(
                 && o.Permission == command.Permission, ct);
 
         if (rowsDeleted == 0)
-            return Error.NotFound(
-                "PermissionOverrideNotFound",
-                $"No permission override found for user {command.TargetUserId} and permission {command.Permission}.");
+            return PermissionErrors.PermissionOverrideNotFound;
 
         logger.LogInformation(
-            "Revoked permission override for user {TargetUserId} and permission {Permission}.",
+            LogMessages.Permission_Revoked,
             command.TargetUserId,
             command.Permission);
 

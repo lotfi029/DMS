@@ -1,4 +1,3 @@
-using Application.DTOs.Permissions;
 using Application.DTOs.Roles;
 
 namespace Infrastructure.Services;
@@ -70,23 +69,46 @@ internal sealed class RoleService(
             ? Result.Success() 
             : RoleErrors.UserNotInRole;
     }
+    public async Task<Result<RoleResponse>> GetByIdAsync(string roleId, CancellationToken ct = default)
+    {
+        var role = await dbContext.Roles
+            .AsNoTracking()
+            .SingleOrDefaultAsync(r => r.Id == roleId, ct);
 
-    public async Task<Result<IEnumerable<RoleResponse>>> GetUserRolesAsync(string userId, CancellationToken ct = default)
+        if (role is null)
+            return RoleErrors.NotFound;
+
+        var userCount = await dbContext.UserRoles.CountAsync(ur => ur.RoleId == roleId, ct);
+        var permissionCount = await dbContext.RoleClaims.CountAsync(rp => rp.RoleId == roleId, ct);
+
+        var response = new RoleResponse(
+            role.Id,
+            role.Name!,
+            role.Description,
+            role.IsActive,
+            userCount,
+            permissionCount,
+            role.CreatedAt
+            );
+
+        return response;
+    }
+    public async Task<Result<IEnumerable<RoleListResponse>>> GetUserRolesAsync(string userId, CancellationToken ct = default)
     {
         var user = await userManager.FindByIdAsync(userId);
         if (user is null)
             return Error.NotFound("Role.GetUserRoles", "User not found");
         
         var roles = await dbContext.Roles
-            .Join(dbContext.UserRoles.Where(ur => ur.UserId == userId), r => r.Id, ur => ur.RoleId, (r, ur) => new RoleResponse(r.Id, r.Name!))
+            .Join(dbContext.UserRoles.Where(ur => ur.UserId == userId), r => r.Id, ur => ur.RoleId, (r, ur) => new RoleListResponse(r.Id, r.Name!, r.IsActive))
             .ToListAsync(ct);
 
         return roles;
     }
 
-    public async Task<Result<IEnumerable<RoleResponse>>> GetAllRolesAsync(CancellationToken ct = default)
+    public async Task<Result<IEnumerable<RoleListResponse>>> GetAllRolesAsync(CancellationToken ct = default)
     {
-        var roles = await roleManager.Roles.Select(r => new RoleResponse(r.Id, r.Name!)).ToListAsync(ct);
+        var roles = await roleManager.Roles.Select(r => new RoleListResponse(r.Id, r.Name!, r.IsActive)).ToListAsync(ct);
         return roles;
     }
 }

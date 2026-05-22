@@ -28,26 +28,28 @@ internal sealed class PermissionEndpoints : IEndpoint
         group.MapPost("/deny", DenyAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Deny))
             .Produces(StatusCodes.Status204NoContent);
-        group.MapDelete("/revoke", RevokeAsync)
+        group.MapDelete("{userId:guid}/overrides/{permission:alpha}", RevokeAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Revoke))
             .Produces(StatusCodes.Status204NoContent);
 
-        group.MapPost("{roleId:guid}", CreatePermissionAsync)
+        group.MapPost("/{roleId:guid}", AssignPermissionToRoleAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.AssignToRole))
             .Produces(StatusCodes.Status204NoContent);
-        group.MapDelete("{roleId:guid}", DeletePermissionAsync)
+        group.MapDelete("/{roleId:guid}/{permission:alpha}", RemovePermissionFromRoleAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.RemoveFromRole))
             .Produces(StatusCodes.Status204NoContent);
 
-        group.MapGet("/user/{userId}", GetUserPermissionsAsync)
+        group.MapGet("/user/{userId:guid}", GetUserPermissionsAsync)
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Read))
             .Produces<IEnumerable<PermissionResponse>>(StatusCodes.Status200OK);
         group.MapGet("/", GetAllPermissionsAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Read))
             .Produces<IEnumerable<PermissionResponse>>(StatusCodes.Status200OK);
-        group.MapGet("/role/{roleId}", GetRolePermissionsAsync)
+        group.MapGet("/role/{roleId:guid}", GetRolePermissionsAsync)
             .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Read))
             .Produces<IEnumerable<string>>(StatusCodes.Status200OK);
         group.MapGet("/me", GetMyEffectivePermissionsAsync)
+            .WithMetadata(new HasPermissionAttribute(DefaultPermissions.Permissions.Read))
             .Produces<IEnumerable<PermissionResponse>>(StatusCodes.Status200OK);
     }
     private async Task<IResult> GrantAsync(
@@ -90,15 +92,16 @@ internal sealed class PermissionEndpoints : IEndpoint
             : result.ToProblem();
     }
     private async Task<IResult> RevokeAsync(
-        [FromBody] RevokePermissionRequest request,
+        [FromRoute] string userId,
+        [FromRoute] string permission,
         [FromServices] ICommandHandler<RevokePermissionOverrideCommand> handler,
         HttpContext httpContext,
         CancellationToken ct)
     {
         var callerUserId = httpContext.GetUserId();
         var command = new RevokePermissionOverrideCommand(
-            request.TargetUserId,
-            request.Permission,
+            userId,
+            permission,
             callerUserId
         );
         var result = await handler.HandleAsync(command, ct);
@@ -106,16 +109,12 @@ internal sealed class PermissionEndpoints : IEndpoint
             ? Results.NoContent()
             : result.ToProblem();
     }
-    private async Task<IResult> CreatePermissionAsync(
+    private async Task<IResult> AssignPermissionToRoleAsync(
         [FromRoute] string roleId,
         [FromBody] PermissionRequest request,
-        [FromServices] IValidator<PermissionRequest> validator,
         [FromServices] ICommandHandler<AssignPermissionToRoleCommand> handler,
         CancellationToken ct)
     {
-        if (await validator.ValidateAsync(request, ct) is { IsValid: false } validationResult)
-            return Results.ValidationProblem(validationResult.ToDictionary());
-
         var command = new AssignPermissionToRoleCommand(roleId, request.PermissionName);
         var result = await handler.HandleAsync(command, ct);
         
@@ -160,17 +159,13 @@ internal sealed class PermissionEndpoints : IEndpoint
             : result.ToProblem();
     }
 
-    private async Task<IResult> DeletePermissionAsync(
+    private async Task<IResult> RemovePermissionFromRoleAsync(
         [FromRoute] string roleId,
-        [FromBody] PermissionRequest request,
-        [FromServices] IValidator<PermissionRequest> validator,
+        [FromRoute] string permission,
         [FromServices] ICommandHandler<RemovePermissionFromRoleCommand> handler,
         CancellationToken ct)
     {
-        if (await validator.ValidateAsync(request, ct) is { IsValid: false } validationResult)
-            return Results.ValidationProblem(validationResult.ToDictionary());
-        
-        var command = new RemovePermissionFromRoleCommand(roleId, request.PermissionName);
+        var command = new RemovePermissionFromRoleCommand(roleId, permission);
         var result = await handler.HandleAsync(command, ct);
         return result.IsSuccess 
             ? Results.Ok() 

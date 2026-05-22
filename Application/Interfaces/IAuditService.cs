@@ -22,6 +22,6 @@ public interface IAuditService
         );
 
     Task<AuditPagedResult> GetLogsAsync(AuditLogQuery query, CancellationToken ct = default);
-    Task<IEnumerable<AuditLog>> GetEntityHistoryAsync(string entityName, string entityId, CancellationToken ct = default);
-    Task<IEnumerable<AuditLog>> GetUserActivityAsync(string userId, int pageSize = 50, CancellationToken ct = default);
+    Task<IEnumerable<AuditLogResponse>> GetUserActivityAsync(string userId, int pageSize = 50, CancellationToken ct = default);
+    Task<IEnumerable<AuditLogResponse>> GetEntityHistoryAsync(string entityName, string entityId, CancellationToken ct = default);
 }

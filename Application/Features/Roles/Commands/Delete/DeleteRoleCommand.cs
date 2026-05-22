@@ -2,7 +2,16 @@ namespace Application.Features.Roles.Commands.Delete;
 
 public sealed record DeleteRoleCommand(string RoleId) : ICommand;
 
-public sealed class DeleteRoleCommandHandler(
+internal sealed class DeleteRoleCommandValidator : AbstractValidator<DeleteRoleCommand>
+{
+    public DeleteRoleCommandValidator()
+    {
+        RuleFor(x => x.RoleId)
+            .NotEmpty().WithMessage("Role ID is required.")
+            .Must(id => Guid.TryParse(id, out _)).WithMessage("Role ID must be a valid GUID.");
+    }
+}
+internal sealed class DeleteRoleCommandHandler(
     IRoleService service,
     IAuditService auditService,
     ILogger<DeleteRoleCommandHandler> logger) : ICommandHandler<DeleteRoleCommand>

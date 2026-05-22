@@ -2,7 +2,19 @@ namespace Application.Features.Roles.Commands.Create;
 
 public sealed record CreateRoleCommand(string RoleName) : ICommand;
 
-public sealed class CreateRoleCommandHandler(
+internal sealed class CreateRoleCommandValidator : AbstractValidator<CreateRoleCommand>
+{
+    public CreateRoleCommandValidator()
+    {
+        RuleFor(x => x.RoleName)
+            .NotEmpty().WithMessage("Role name is required.")
+            .MaximumLength(256).WithMessage("Role name must not exceed 256 characters.")
+            .Matches(@"^[a-zA-Z0-9_\-]+$")
+            .WithMessage("Role name can only contain letters, numbers, underscores, and hyphens.");
+    }
+}
+
+internal sealed class CreateRoleCommandHandler(
     IRoleService service,
     IAuditService auditService,
     ILogger<CreateRoleCommandHandler> logger) : ICommandHandler<CreateRoleCommand>

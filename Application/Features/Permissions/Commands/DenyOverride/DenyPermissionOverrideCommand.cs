@@ -17,14 +17,10 @@ internal sealed class DenyPermissionOverrideCommandHandler(
     public async Task<Result> HandleAsync(DenyPermissionOverrideCommand command, CancellationToken ct = default)
     {
         if (!DefaultPermissions.AllDefaultPermissions.Contains(command.Permission))
-            return Error.BadRequest(
-                "InvalidPermission",
-                $"The permission '{command.Permission}' is not a valid permission.");
+            return PermissionErrors.InvalidPermission(command.Permission);
 
         if (await repo.ExistsAsync(p => p.Permission == command.Permission && p.UserId == command.TargetUserId, ct: ct))
-            return Error.NotFound(
-                "PermissionNotFound",
-                $"The permission '{command.Permission}' does not exist for user '{command.TargetUserId}'.");
+            return PermissionErrors.PermissionOverrideAlreadyExists(command.Permission);
 
         var entity = UserPermissionOverride.Deny(
             userId: command.TargetUserId,
@@ -36,7 +32,7 @@ internal sealed class DenyPermissionOverrideCommandHandler(
         await unitOfWork.SaveChangesAsync(ct);
 
         logger.LogInformation(
-            "Permission override DENIED: {Permission} → user {UserId} by {CallerId}",
+            LogMessages.Permission_OverrideDenied,
             command.Permission, command.TargetUserId, command.CallerUserId);
 
         await auditService.LogActionAsync(

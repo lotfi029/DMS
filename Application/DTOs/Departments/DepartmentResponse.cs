@@ -11,3 +11,8 @@ public sealed record DepartmentResponse(
     DateTime CreatedAt,
     DateTime UpdatedAt
 );
+public sealed record DepartmentListResponse(
+    Guid Id,
+    string Name,
+    DateTime CreatedAt
+);

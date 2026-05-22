@@ -1,3 +1,5 @@
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+
 namespace Domain.Services;
 // TODO: Refactor this class to use domain events for user-department association changes and handle them in the application layer for better separation of concerns and maintainability.
 public class DepartmentDomainService(
@@ -169,10 +171,12 @@ public class DepartmentDomainService(
     }
     public async Task<Result> DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        var affectedRows = await departmentRepository
-            .ExecuteDeleteAsync(d => d.Id == id, ct);
+        var rows = await departmentRepository.ExecuteUpdateAsync(
+            d => d.Id == id && d.IsActive,
+            d => d.SetProperty(p => p.IsActive, false)
+                  .SetProperty(p => p.UpdatedAt, DateTime.UtcNow), ct);
 
-        if (affectedRows == 0)
+        if (rows == 0)
             return DepartmentErrors.NotFound;
 
         return Result.Success();

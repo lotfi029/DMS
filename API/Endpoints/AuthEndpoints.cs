@@ -34,13 +34,9 @@ internal sealed class AuthEndpoints : IEndpoint
 
     private async Task<IResult> LoginAsync(
         [FromBody] LoginRequest request,
-        [FromServices] IValidator<LoginRequest> validator,
         [FromServices] ICommandHandler<LoginCommand, AuthResponse> handler,
         CancellationToken ct)
     {
-        if (await validator.ValidateAsync(request, ct) is { IsValid: false } validationResult)
-            return Results.ValidationProblem(validationResult.ToDictionary());
-
         var command = new LoginCommand(request);
         var result = await handler.HandleAsync(command, ct);
 

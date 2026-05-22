@@ -16,10 +16,10 @@ internal sealed class AddEmployeeToDepartmentCommandValidator : AbstractValidato
     }
 }
 
-
 internal sealed class AddEmployeeToDepartmentCommandHandler(
     IDepartmentDomainService departmentDomainService,
     IAuditService auditService,
+    IUnitOfWork unitOfWork,
     ILogger<AddEmployeeToDepartmentCommandHandler> logger) : ICommandHandler<AddEmployeeToDepartmentCommand>
 {
     public async Task<Result> HandleAsync(AddEmployeeToDepartmentCommand command, CancellationToken ct = default)
@@ -28,6 +28,7 @@ internal sealed class AddEmployeeToDepartmentCommandHandler(
 
         if (result.IsFailure)
             return result.Error;
+        await unitOfWork.SaveChangesAsync(ct);
 
         logger.LogInformation(LogMessages.Dept_UserAdded, command.EmployeeId, command.DepartmentId);
 

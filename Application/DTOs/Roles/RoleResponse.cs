@@ -2,5 +2,10 @@
 
 public sealed record RoleResponse(
     string Id,
-    string RoleName
-);
+    string Name,
+    string? Description,
+    bool IsActive,
+    int UserCount,
+    int PermissionCount,
+    DateTime CreatedAt
+    );
